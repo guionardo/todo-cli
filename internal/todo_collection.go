@@ -5,10 +5,17 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"gopkg.in/yaml.v3"
 )
+
+var CollectionConfigFile string
+
+func init() {
+	CollectionConfigFile, _ = CollectionFile()
+}
 
 type ToDoCollection struct {
 	Items      []*ToDoItem
@@ -16,6 +23,7 @@ type ToDoCollection struct {
 	LastSave   time.Time
 	LastSync   time.Time
 	Config     Config
+	FileName   string `yaml:"-"`
 }
 
 func CollectionFile() (string, error) {
@@ -28,7 +36,18 @@ func CollectionFile() (string, error) {
 			log.Printf("Error parsing collection file %s: %s", todo_collection, err)
 		}
 	}
-	return "", nil
+	home, err := os.UserHomeDir()
+	if err == nil {
+		configPath := path.Join(home, ".config", "todo-cli")
+		if _, err = os.Stat(configPath); os.IsNotExist(err) {
+			err = os.MkdirAll(configPath, 0755)
+		}
+		if err == nil {
+			return path.Join(configPath, "todo.yaml"), nil
+		}
+	}
+	log.Printf("Error getting user home dir: %s", err)
+	return "", err
 }
 
 func ParseCollectionFile(collectionFile string) (*ToDoCollection, error) {
@@ -39,6 +58,7 @@ func ParseCollectionFile(collectionFile string) (*ToDoCollection, error) {
 	defer file.Close()
 	body, _ := ioutil.ReadAll(file)
 	collection := &ToDoCollection{}
+	collection.FileName = collectionFile
 	return collection, yaml.Unmarshal(body, collection)
 }
 
@@ -47,11 +67,18 @@ func (collection *ToDoCollection) Save(collectionFile string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(collectionFile, body, 0644)
+	lastSave := collection.LastSave
+	collection.LastSave = time.Now()
+	err = ioutil.WriteFile(collectionFile, body, 0644)
+	if err != nil {
+		collection.LastSave = lastSave
+	}
+	return err
 }
 
 func (collection *ToDoCollection) Add(item *ToDoItem) {
 	collection.Items = append(collection.Items, item)
+	collection.LastUpdate = time.Now()
 }
 
 func (collection *ToDoCollection) Complete(id int) error {

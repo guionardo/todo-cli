@@ -8,6 +8,10 @@ import (
 	"log"
 )
 
+var (
+	DebugMode bool
+)
+
 type Config struct {
 	ToDoListName  string
 	GistId        string

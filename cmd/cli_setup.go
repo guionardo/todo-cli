@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/guionardo/todo-cli/internal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -17,17 +19,35 @@ func App() *cli.App {
 				Email: "guionardo@gmail.com",
 			},
 		},
+		Before: func(c *cli.Context) error {
+			collectionFile, err := internal.CollectionFile()
+			if err != nil {
+				return err
+			}
+			collection, err := internal.ParseCollectionFile(collectionFile)
+			c.Context = context.WithValue(c.Context, "collection", collection)
+			return nil
+		},
 		Action: func(c *cli.Context) error {
 			fmt.Printf("Ok")
 			return nil
 		},
-		Commands: []*cli.Command{
-			{
-				Name:    "add",
-				Usage:   "Add a new todo item",
-				Aliases: []string{"a"},
-				Action:  ActionAdd,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "config",
+				Aliases:     []string{"c"},
+				Usage:       "Load configuration from `FILE`",				
+				Destination: &internal.CollectionConfigFile,
+				EnvVars:     []string{"TODO_CONFIG"},
 			},
+			&cli.BoolFlag{
+				Name:        "debug",
+				Usage:       "Enable debug mode",
+				Destination: &internal.DebugMode,
+			},
+		},
+		Commands: []*cli.Command{
+			AddCommand,
 			{
 				Name:    "list",
 				Usage:   "List all todo items",
@@ -61,6 +81,16 @@ func App() *cli.App {
 				Action:    ActionComplete,
 				ArgsUsage: "[todo-id]",
 			},
+			{
+				Name:    "setup",
+				Usage:   "Setup todo app",
+				Aliases: []string{"s"},
+				Action:  ActionSetup,
+			},
 		},
 	}
+}
+
+func GetCollection(c *cli.Context) *internal.ToDoCollection {
+	return c.Context.Value("collection").(*internal.ToDoCollection)
 }
