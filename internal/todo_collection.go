@@ -3,51 +3,35 @@ package internal
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
-	"path"
 	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
-var CollectionConfigFile string
-
-func init() {
-	CollectionConfigFile, _ = CollectionFile()
-}
-
 type ToDoCollection struct {
-	Items      []*ToDoItem
-	LastUpdate time.Time
-	LastSave   time.Time
-	LastSync   time.Time
-	Config     Config
-	FileName   string `yaml:"-"`
+	Items      []*ToDoItem `yaml:"items"`
+	LastUpdate time.Time   `yaml:"last_update"`
+	LastSave   time.Time   `yaml:"last_save"`
+	LastSync   time.Time   `yaml:"last_sync"`
+	Config     Config      `yaml:"config"`
 }
 
-func CollectionFile() (string, error) {
-	if todo_collection := os.Getenv("TODO_COLLECTION"); todo_collection != "" {
-		if _, err := os.Stat(todo_collection); err == nil {
-			_, err := ParseCollectionFile(todo_collection)
-			if err == nil {
-				return todo_collection, nil
-			}
-			log.Printf("Error parsing collection file %s: %s", todo_collection, err)
+func (c *ToDoCollection) String() string {
+	return fmt.Sprintf("%s\nItems: %d\nLastSave: %s\nLastSync: %s\n", c.Config, len(c.Items), c.LastSave, c.LastSync)
+}
+
+func ParseCollectionData(collectionData []byte) (*ToDoCollection, error) {
+	collection := &ToDoCollection{}
+	if err := yaml.Unmarshal(collectionData, collection); err != nil {
+		return nil, err
+	}
+	for _, item := range collection.Items {
+		if len(item.Id) == 0 {
+			item.Id = NewItemId()
 		}
 	}
-	home, err := os.UserHomeDir()
-	if err == nil {
-		configPath := path.Join(home, ".config", "todo-cli")
-		if _, err = os.Stat(configPath); os.IsNotExist(err) {
-			err = os.MkdirAll(configPath, 0755)
-		}
-		if err == nil {
-			return path.Join(configPath, "todo.yaml"), nil
-		}
-	}
-	log.Printf("Error getting user home dir: %s", err)
-	return "", err
+	return collection, nil
 }
 
 func ParseCollectionFile(collectionFile string) (*ToDoCollection, error) {
@@ -57,38 +41,78 @@ func ParseCollectionFile(collectionFile string) (*ToDoCollection, error) {
 	}
 	defer file.Close()
 	body, _ := ioutil.ReadAll(file)
-	collection := &ToDoCollection{}
-	collection.FileName = collectionFile
-	return collection, yaml.Unmarshal(body, collection)
+	collection, err := ParseCollectionData(body)
+	collection.Config.ConfigFileName = collectionFile
+	return collection, err
 }
 
 func (collection *ToDoCollection) Save(collectionFile string) error {
-	body, err := yaml.Marshal(collection)
-	if err != nil {
-		return err
-	}
 	lastSave := collection.LastSave
 	collection.LastSave = time.Now()
-	err = ioutil.WriteFile(collectionFile, body, 0644)
+	body, err := yaml.Marshal(collection)
 	if err != nil {
 		collection.LastSave = lastSave
+		return err
 	}
+	err = ioutil.WriteFile(collectionFile, body, 0644)
 	return err
 }
 
 func (collection *ToDoCollection) Add(item *ToDoItem) {
+	maxId := 0
+	for _, item := range collection.Items {
+		if item.Index > maxId {
+			maxId = item.Index
+		}
+	}
+	if item.UpdatedAt.IsZero() {
+		item.UpdatedAt = time.Now()
+	}
+	item.Index = maxId + 1
 	collection.Items = append(collection.Items, item)
 	collection.LastUpdate = time.Now()
 }
 
 func (collection *ToDoCollection) Complete(id int) error {
-	if id < 0 || id >= len(collection.Items) {
-		return fmt.Errorf("Invalid id %d", id)
+	for _, item := range collection.Items {
+		if item.Index == id {
+			if item.Completed {
+				return fmt.Errorf("Item %d already completed", id)
+			}
+			item.Completed = true
+			item.UpdatedAt = time.Now()
+			collection.LastUpdate = time.Now()
+			return nil
+		}
 	}
-	if collection.Items[id].Completed {
+	return fmt.Errorf("Item %d not found", id)
+}
+
+func (collection *ToDoCollection) UndoComplete(id int) error {
+	for _, item := range collection.Items {
+		if item.Index == id {
+			if !item.Completed {
+				return fmt.Errorf("Item %d pending yet", id)
+			}
+			item.Completed = false
+			collection.LastUpdate = time.Now()
+			item.UpdatedAt = time.Now()
+			return nil
+		}
+	}
+	return fmt.Errorf("Item %d not found", id)
+}
+
+func (collection *ToDoCollection) DoAct(id int) error {
+	item, err := collection.Get(id)
+	if err != nil {
+		return err
+	}
+	if item.Completed {
 		return fmt.Errorf("Item %d already completed", id)
 	}
-	collection.Items[id].Completed = true
+	item.LastAction = time.Now()
+	item.UpdatedAt = time.Now()
 	collection.LastUpdate = time.Now()
 	return nil
 }
@@ -103,19 +127,33 @@ func (collection *ToDoCollection) Remove(id int) error {
 }
 
 func (collection *ToDoCollection) Get(id int) (*ToDoItem, error) {
-	if id < 0 || id >= len(collection.Items) {
-		return nil, fmt.Errorf("Invalid id %d", id)
+	for _, item := range collection.Items {
+		if item.Index == id {
+			return item, nil
+		}
 	}
-	return collection.Items[id], nil
+	return nil, fmt.Errorf("Item %d not found", id)
 }
 
-func (collection *ToDoCollection) GetByTag(tag string) []*ToDoItem {
+func (collection *ToDoCollection) GetByFilter(tags []string, justCompleted bool, justPending bool) []*ToDoItem {
 	items := make([]*ToDoItem, 0)
-
 	for _, item := range collection.Items {
-		for _, itemTag := range item.Tags {
-			if itemTag == tag {
-				items = append(items, item)
+		if justCompleted && !item.Completed {
+			continue
+		}
+		if justPending && item.Completed {
+			continue
+		}
+		if len(tags) == 0 {
+			items = append(items, item)
+			continue
+		}
+		for _, tag := range tags {
+			for _, itemTag := range item.Tags {
+				if itemTag == tag {
+					items = append(items, item)
+					break
+				}
 			}
 		}
 	}

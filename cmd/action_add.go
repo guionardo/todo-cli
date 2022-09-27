@@ -10,31 +10,26 @@ import (
 )
 
 var (
-	AddTodoTitle   string
-	AddTodoDueDate cli.Timestamp
-	AddTodoTags    = cli.NewStringSlice()
-	AddCommand     = &cli.Command{
-		Name:    "add",
-		Usage:   "Add a new todo item",
-		Aliases: []string{"a"},
-		Action:  ActionAdd,
-
+	AddCommand = &cli.Command{
+		Name:     "add",
+		Usage:    "Add a new todo item",
+		Aliases:  []string{"a"},
+		Action:   ActionAdd,
+		Category: "Tasks",
 		// SkipFlagParsing: true,
 		Flags: []cli.Flag{
 			&cli.TimestampFlag{
-				Name:        "due-date",
-				Aliases:     []string{"d"},
-				Usage:       "Due date for the todo item",
-				Layout:      "2006-01-02",
-				Required:    false,
-				Destination: &AddTodoDueDate,
+				Name:     "due-date",
+				Aliases:  []string{"d"},
+				Usage:    "Due date for the todo item",
+				Layout:   "2006-01-02",
+				Required: false,
 			},
 			&cli.StringSliceFlag{
-				Name:        "tags",
-				Aliases:     []string{"t"},
-				Usage:       "Tags for the todo item",
-				Required:    false,
-				Destination: AddTodoTags,
+				Name:     "tags",
+				Aliases:  []string{"t"},
+				Usage:    "Tags for the todo item",
+				Required: false,
 			},
 		},
 	}
@@ -44,26 +39,26 @@ func ActionAdd(c *cli.Context) error {
 	if c.NArg() == 0 {
 		return fmt.Errorf("Missing title")
 	}
-	AddTodoTitle = c.Args().Get(0)
+	title := c.Args().Get(0)
 
-	collection := GetCollection(c)
+	context := internal.GetRunningContext(c).AssertExist()
 
-	var dueDate time.Time
-	if AddTodoDueDate.Value() != nil {
-		d := AddTodoDueDate.Value()
-		dueDate = *d
-	}
+	var dueDate = c.Timestamp("due-date")
 
+	tags := c.StringSlice("tags")
 	item := &internal.ToDoItem{
-		Title: AddTodoTitle,
-		DueTo: dueDate,
-		Tags:  AddTodoTags.Value(),
+		Id:        internal.NewItemId(),
+		Title:     title,
+		DueTo:     *dueDate,
+		Tags:      tags,
+		UpdatedAt: time.Now(),
 	}
-	// TODO: DueTo and Tags are not being saved
-	collection.Add(item)
-	err := collection.Save(collection.FileName)
+
+	context.Collection.Add(item)
+	err := context.Collection.Save(context.CollectionFileName)
 	if err == nil {
 		log.Printf("Add todo: %s", item.ToMarkDown())
+		context.Collection.GISTSync(context.DebugMode)
 	} else {
 		log.Printf("Error saving collection: %s", err)
 	}

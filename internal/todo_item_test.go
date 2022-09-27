@@ -14,12 +14,13 @@ func Test_extractCompleted(t *testing.T) {
 		want  bool
 		want1 string
 	}{
-		{name: "completed", line: "- [x] Title", want: true, want1: "Title"},
-		{name: "not completed", line: "- [ ] Title 2", want: false, want1: "Title 2"},
+		{name: "completed", line: completeSingleMD, want: true, want1: "Complete"},
+		{name: "not completed", line: singleMD, want: false, want1: "Pending"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := extractCompleted(tt.line)
+			_, noIndex := extractIndex(tt.line)
+			got, got1 := extractCompleted(noIndex)
 			if got != tt.want {
 				t.Errorf("extractCompleted() got = %v, want %v", got, tt.want)
 			}
@@ -78,64 +79,23 @@ func Test_extractDueTo(t *testing.T) {
 	}
 }
 
-func TestToDoItem_FromMarkDown(t *testing.T) {
-	type fields struct {
-		Title     string
-		Completed bool
-		DueTo     time.Time
-		Tag       []string
-	}
-
-	tests := []struct {
-		name    string
-		fields  fields
-		line    string
-		wantErr bool
-	}{
-		{name: "Single", fields: fields{Title: "Title", Completed: false, DueTo: time.Time{}, Tag: []string{}}, line: "- [ ] Title", wantErr: false},
-		{name: "Completed", fields: fields{Title: "Title", Completed: true, DueTo: time.Time{}, Tag: []string{}}, line: "- [x] Title", wantErr: false},
-		{name: "Tagged", fields: fields{Title: "Title", Completed: false, DueTo: time.Time{}, Tag: []string{"tag"}}, line: "- [ ] #tag Title", wantErr: false},
-		{name: "Due to", fields: fields{Title: "Title", Completed: false, DueTo: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Tag: []string{}}, line: "- [ ] (2020-01-01) Title", wantErr: false},
-		{name: "Tagged and due to", fields: fields{Title: "Title", Completed: false, DueTo: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Tag: []string{"tag"}}, line: "- [ ] #tag (2020-01-01) Title", wantErr: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			item := &ToDoItem{
-				Title:     tt.fields.Title,
-				Completed: tt.fields.Completed,
-				DueTo:     tt.fields.DueTo,
-				Tags:      tt.fields.Tag,
-			}
-			parsedItem := &ToDoItem{}
-			if err := parsedItem.FromMarkDown(tt.line); (err != nil) != tt.wantErr {
-				t.Errorf("ToDoItem.FromMarkDown() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !reflect.DeepEqual(item, parsedItem) {
-				t.Errorf("ToDoItem.FromMarkDown() got = %v, want %v", parsedItem, item)
-			}
-		})
-	}
-}
-
-func TestToDoItem_ToMarkDown(t *testing.T) {
-
+func TestToDoItem_NotifyText(t *testing.T) {
+	dayAgo := time.Now().Add(-24 * time.Hour)
 	tests := []struct {
 		name string
 		item ToDoItem
 		want string
 	}{
-		{name: "Single", item: ToDoItem{Title: "Title", Completed: false, DueTo: time.Time{}, Tags: []string{}}, want: "- [ ] Title"},
-		{name: "Completed", item: ToDoItem{Title: "Title", Completed: true, DueTo: time.Time{}, Tags: []string{}}, want: "- [x] Title"},
-		{name: "Tagged", item: ToDoItem{Title: "Title", Completed: true, DueTo: time.Time{}, Tags: []string{"tag"}}, want: "- [x] #tag Title"},
-		{name: "Tagged 2", item: ToDoItem{Title: "Title", Completed: true, DueTo: time.Time{}, Tags: []string{"tag", "tag2"}}, want: "- [x] #tag #tag2 Title"},
-		{name: "Due to", item: ToDoItem{Title: "Title", Completed: true, DueTo: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Tags: []string{}}, want: "- [x] (2020-01-01) Title"},
-		{name: "Tagged and due to", item: ToDoItem{Title: "Title", Completed: true, DueTo: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), Tags: []string{"tag", "tag2"}}, want: "- [x] #tag #tag2 (2020-01-01) Title"},
+		{name: "completed", item: ToDoItem{Title: "Title", Completed: true, UpdatedAt: dayAgo}, want: "Completed @ " + dayAgo.Format(DateTimeFormat)},
+		{name: "new item", item: ToDoItem{Title: "Title", UpdatedAt: dayAgo}, want: "New (1 days)"},
+		{name: "due to", item: ToDoItem{Title: "Title", DueTo: dayAgo, UpdatedAt: dayAgo}, want: "Overdue -1 days"},
+		
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			if got := tt.item.ToMarkDown(); got != tt.want {
-				t.Errorf("ToDoItem.ToMarkDown() = %v, want %v", got, tt.want)
+			item := tt.item
+			if got := item.NotifyText(); got != tt.want {
+				t.Errorf("ToDoItem.NotifyText() = %v, want %v", got, tt.want)
 			}
 		})
 	}
