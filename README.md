@@ -5,6 +5,7 @@ To Do list with gist repository
 [![CodeQL](https://github.com/guionardo/todo-cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/guionardo/todo-cli/actions/workflows/codeql.yml)
 [![Go](https://github.com/guionardo/todo-cli/actions/workflows/go.yml/badge.svg)](https://github.com/guionardo/todo-cli/actions/workflows/go.yml)
 [![codecov](https://codecov.io/gh/guionardo/todo-cli/branch/main/graph/badge.svg?token=SbUaUBJkzE)](https://codecov.io/gh/guionardo/todo-cli)
+[![Release](https://github.com/guionardo/todo-cli/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/guionardo/todo-cli/actions/workflows/release.yml)
 
 ## Commands
 
