@@ -7,15 +7,13 @@ import (
 	"strconv"
 
 	"github.com/guionardo/todo-cli/pkg/backup"
+	"github.com/guionardo/todo-cli/pkg/consts"
 	"github.com/guionardo/todo-cli/pkg/github"
 	"github.com/guionardo/todo-cli/pkg/todo"
 	"github.com/urfave/cli/v2"
 )
 
-const (
-	DefaultLocalConfigFile     = "config.yaml"
-	DefaultLocalCollectionFile = "todo.yaml"
-)
+
 
 type Context struct {
 	DataFolder          string
@@ -83,8 +81,8 @@ func ContextFromDataFolder(dataFolder string) *Context {
 
 	context := &Context{
 		DataFolder:          dataFolder,
-		LocalConfigFile:     path.Join(dataFolder, DefaultLocalConfigFile),
-		LocalCollectionFile: path.Join(dataFolder, DefaultLocalCollectionFile),
+		LocalConfigFile:     path.Join(dataFolder, consts.DefaultLocalConfigFile),
+		LocalCollectionFile: path.Join(dataFolder, consts.DefaultLocalCollectionFile),
 	}
 
 	config, err := LoadLocalConfig(context.LocalConfigFile)

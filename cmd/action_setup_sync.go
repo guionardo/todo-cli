@@ -36,14 +36,14 @@ func ActionSetupSync(c *cli.Context) error {
 	if c.IsSet("token") {
 		token := c.String("token")
 		if len(token) > 0 && token != c2.LocalConfig.Gist.Authorization {
-			api := github.NewGitHubGistAPI(token)
-			if !api.Enabled() {
-				return api.LastError
+			api, err := github.NewGistAPI(&c2.LocalConfig.Gist)
+			if err != nil {
+				return err
 			}
 
 			c2.LocalConfig.Gist.Authorization = token
-			c2.LocalConfig.Gist.GistId = api.GistId
-			c2.LocalConfig.Gist.GistDescription = api.GistDescription
+			c2.LocalConfig.Gist.GistId = api.Config.GistId
+			c2.LocalConfig.Gist.GistDescription = api.Config.GistDescription
 			changed = true
 		}
 	}

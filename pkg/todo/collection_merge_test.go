@@ -34,7 +34,7 @@ func TestMergeCollections(t *testing.T) {
 		if !reflect.DeepEqual(deleted, expected_deleted) {
 			t.Errorf("MergeToDoItems() = %v, want %v", deleted, expected_deleted)
 		}
-		if diffCount != 3 {
+		if diffCount != 6 {
 			t.Errorf("MergeToDoItems() diffCount = %v, want %v", diffCount, 3)
 		}
 		if !upload {

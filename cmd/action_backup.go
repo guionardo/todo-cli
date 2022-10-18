@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/guionardo/todo-cli/pkg/backup"
+	"github.com/guionardo/todo-cli/pkg/consts"
 	"github.com/guionardo/todo-cli/pkg/ctx"
 	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/urfave/cli/v2"
@@ -52,7 +53,7 @@ func ActionBackupRun(c *cli.Context) error {
 	c2 := ctx.ContextFromCtx(c)
 	bkpConfig := c2.LocalConfig.Backup
 	bkpConfig.BackupFolder = c.String("path")
-	bkpColl, err := backup.NewBackupCollection(c2.DataFolder, c2.LocalConfig.Backup, ctx.DefaultLocalConfigFile, ctx.DefaultLocalCollectionFile)
+	bkpColl, err := backup.NewBackupCollection(c2.DataFolder, c2.LocalConfig.Backup, consts.DefaultLocalConfigFile, consts.DefaultLocalCollectionFile)
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func ActionBackupList(c *cli.Context) error {
 	c2 := ctx.ContextFromCtx(c)
 	bkpConfig := c2.LocalConfig.Backup
 	bkpConfig.BackupFolder = c.String("path")
-	bkpColl, err := backup.NewBackupCollection(c2.DataFolder, c2.LocalConfig.Backup, ctx.DefaultLocalConfigFile, ctx.DefaultLocalCollectionFile)
+	bkpColl, err := backup.NewBackupCollection(c2.DataFolder, c2.LocalConfig.Backup, consts.DefaultLocalConfigFile, consts.DefaultLocalCollectionFile)
 	if err != nil {
 		return err
 	}

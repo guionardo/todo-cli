@@ -7,14 +7,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/guionardo/todo-cli/pkg/consts"
+
 	"github.com/guionardo/todo-cli/pkg/logger"
+)
+
+const (
+	DefaultGistDescription = "TODO CLI CONFIG"
 )
 
 type GistAPI struct {
 	Config         *GistConfig
 	GistContent    []byte
 	UpdatedAt      time.Time
-	DisabledStatus string	
+	DisabledStatus string
 }
 
 func (api *GistAPI) checkStatus(err error) error {
@@ -62,7 +68,7 @@ func NewGistAPI(config *GistConfig) (api *GistAPI, err error) {
 
 	for _, gist := range gists {
 		if gist.Description == config.GistDescription {
-			if file, ok := gist.Files[CollectionFileName]; ok {
+			if file, ok := gist.Files[consts.DefaultLocalCollectionFile]; ok {
 				api = &GistAPI{
 					Config: config,
 				}
@@ -109,7 +115,7 @@ func (api *GistAPI) Save(gistContent []byte) (err error) {
 		Description: api.Config.GistDescription,
 		Public:      false,
 		Files: map[string]FileRequest{
-			CollectionFileName: {
+			consts.DefaultLocalCollectionFile: {
 				Content: string(gistContent),
 			},
 		},
@@ -136,7 +142,7 @@ func (api *GistAPI) Save(gistContent []byte) (err error) {
 	api.Config.GistId = gistResponse.Id
 	api.UpdatedAt = gistResponse.UpdatedAt
 	api.GistContent = gistContent
-	api.Config.RawURL = gistResponse.Files[CollectionFileName].RawURL
+	api.Config.RawURL = gistResponse.Files[consts.DefaultLocalCollectionFile].RawURL
 	logger.Debugf("Gist %s: %s", action, gistResponse.Id)
 	return
 }
@@ -159,34 +165,3 @@ func (api *GistAPI) Delete() (err error) {
 	api.Config.RawURL = ""
 	return
 }
-
-
-// logger.Debugf("GetToDoConfigFileGist")
-// content, err := api.request("GET", "https://api.github.com/gists", "GetToDoConfigFileGist", nil)
-// if err != nil {
-// 	return err
-// }
-// var gistList []GistResponse
-// err = json.Unmarshal(content, &gistList)
-// if err != nil {
-// 	return err
-// }
-
-// var configGist *GistResponse
-// for _, gist := range gistList {
-// 	if gist.Description == api.GistDescription && len(gist.Files) == 1 {
-// 		if gistFile, ok := gist.Files[CollectionFileName]; ok {
-// 			api.GistId = gist.Id
-// 			api.ConfigFileRawURL = gistFile.RawURL
-// 			api.UpdatedAt = gist.UpdatedAt
-// 			configGist = &gist
-// 			break
-// 		}
-// 	}
-// }
-// if configGist == nil {
-// 	logger.Debugf("Config GIST not found")
-// 	return fmt.Errorf("Config gist not found")
-// }
-// logger.Debugf("Config GIST found: %s @ %v", configGist.Description, configGist.UpdatedAt)
-// return nil

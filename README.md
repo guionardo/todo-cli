@@ -1,6 +1,9 @@
 # todo-cli
 To Do list with gist repository
 
+[![Release](https://github.com/guionardo/todo-cli/actions/workflows/release.yml/badge.svg)](https://github.com/guionardo/todo-cli/actions/workflows/release.yml)
+[![CodeQL](https://github.com/guionardo/todo-cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/guionardo/todo-cli/actions/workflows/codeql.yml)
+
 ## Commands
 
 todo ""
