@@ -1,0 +1,7 @@
+# {TODO_LIST_NAME}
+
+Updated: {LAST_UPDATE}
+
+* [x] 001 ITEM
+* [ ] 002 (DUE_TO) ITEM 2
+* [ ] 003 #{TAG} (DUE_TO) ITEM 3
