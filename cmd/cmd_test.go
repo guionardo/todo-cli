@@ -10,6 +10,7 @@ import (
 )
 
 func TestActions(t *testing.T) {
+	t.Skip()
 	app := App()
 	setup_file := path.Join(t.TempDir(), "todo-cli.yaml")
 
@@ -31,6 +32,7 @@ func TestActions(t *testing.T) {
 }
 
 func CmdTest_(t *testing.T) {
+	t.Skip()
 
 	dayAgo := time.Now().Add(-24 * time.Hour)
 	tests := []struct {
