@@ -17,7 +17,7 @@ type (
 		Type     string `json:"type"`
 		Language string `json:"language"`
 		RawURL   string `json:"raw_url"`
-		Size     int    `json:"size"`
+		Size     int    `json:"size"`		
 	}
 
 	GistRequest struct {

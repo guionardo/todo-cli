@@ -3,9 +3,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
+	"strconv"
 	"strings"
+
+	"github.com/guionardo/todo-cli/pkg/logger"
+	"github.com/urfave/cli/v2"
 )
 
 func inputText(prompt string, defaultValue string) string {
@@ -13,7 +16,7 @@ func inputText(prompt string, defaultValue string) string {
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Input error: %v", err)
+		logger.Fatalf("Input error: %v", err)
 	}
 	text = strings.Replace(text, "\n", "", -1)
 
@@ -32,4 +35,16 @@ func askYesNo(defaultValue bool, prompt string, args ...any) bool {
 	}
 	text := inputText(fmt.Sprintf(prompt, args...), defaultText)
 	return strings.ToUpper(text) == "Y"
+}
+
+func getToDoId(c *cli.Context) (int, error) {
+	if c.NArg() == 0 {
+		return 0, fmt.Errorf("Missing todo-id")
+	}
+	todoId := c.Args().Get(0)
+	id, err := strconv.Atoi(todoId)
+	if err != nil {
+		return 0, fmt.Errorf("Invalid todo-id")
+	}
+	return id, nil
 }

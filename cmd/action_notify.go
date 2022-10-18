@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/guionardo/todo-cli/internal"
+	"github.com/guionardo/todo-cli/pkg/ctx"
 	"github.com/guionardo/todo-cli/pkg/notify"
 	"github.com/urfave/cli/v2"
 )
@@ -28,12 +28,14 @@ func init() {
 		Usage:   "Notify about pending tasks",
 		Action:  ActionNotify,
 		Flags:   flags,
+		Before:  ctx.ChainedContext(ctx.AssertLocalConfig),
 	}
 }
 
 func ActionNotify(c *cli.Context) error {
-	context := internal.GetRunningContext(c).AssertExist()
-	items := context.Collection.GetByFilter(nil, false, true)
+	c2 := ctx.ContextFromCtx(c)
+	items := c2.Collection.GetByFilter(nil, false, true)
+
 	if len(items) == 0 {
 		return nil
 	}

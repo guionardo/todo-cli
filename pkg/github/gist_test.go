@@ -8,7 +8,7 @@ import (
 
 func TestNewGitHubGistAPI(t *testing.T) {
 	t.Run("Create, publish and consume gist", func(t *testing.T) {
-		api := NewGitHubGistAPI("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", true)
+		api := NewGitHubGistAPI("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")
 		api.GistDescription = "ToDoCli Test"
 		err := api.GetToDoConfigFileGist()
 		if err == nil {

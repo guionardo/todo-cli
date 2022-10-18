@@ -3,7 +3,7 @@ package notify
 import (
 	"fmt"
 
-	"github.com/guionardo/todo-cli/internal"
+	"github.com/guionardo/todo-cli/pkg/todo"
 )
 
 type ConsoleNotifier struct {
@@ -15,7 +15,7 @@ func (n *ConsoleNotifier) BeforeNotify() {
 func (n *ConsoleNotifier) Notify(title string, message string) {
 	fmt.Printf("%s\n", message)
 }
-func (n *ConsoleNotifier) NotifyItem(item internal.ToDoItem) {
+func (n *ConsoleNotifier) NotifyItem(item todo.ToDoItem) {	
 	fmt.Println(item.String() + " " + item.NotifyText())
 }
 func (n *ConsoleNotifier) Info() NotifierInfo {

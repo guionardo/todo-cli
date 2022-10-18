@@ -1,11 +1,11 @@
 package notify
 
-import "github.com/guionardo/todo-cli/internal"
+import "github.com/guionardo/todo-cli/pkg/todo"
 
 type (
 	Notifier interface {
 		Notify(title string, message string)
-		NotifyItem(item internal.ToDoItem)
+		NotifyItem(item todo.ToDoItem)
 		Info() NotifierInfo
 		BeforeNotify()
 	}

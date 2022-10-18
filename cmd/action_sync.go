@@ -2,90 +2,54 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"syscall"
 
-	"github.com/guionardo/todo-cli/internal"
+	"github.com/guionardo/todo-cli/pkg/ctx"
 	"github.com/guionardo/todo-cli/pkg/github"
+	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/term"
+)
+
+var (
+	SyncCommand = &cli.Command{
+		Name:     "sync",
+		Usage:    "Synchronize local collection with GIST",
+		Aliases:  []string{"s"},
+		Action:   ActionSync,
+		Category: "Setup",
+		Before:   ctx.ChainedContext(ctx.AssertLocalConfig),
+		After:    ctx.AssertSave,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:     "simulate",
+				Usage:    "Just for testing",
+				Required: false,
+			},
+		},
+	}
 )
 
 func ActionSync(c *cli.Context) error {
-	fmt.Println("Starting todo setup")
-	context := internal.GetRunningContext(c)
+	c2 := ctx.ContextFromCtx(c)
 
-	configFile := c.String("config")
-	if len(configFile) == 0 {
-		configFile = internal.DefaultCollectionFilePath
-		context.DebugLog("Using default config file: %s", configFile)
-	} else {
-		context.DebugLog("Using config file: %s", configFile)
-	}
-	defaultCollectionName := fmt.Sprintf("%s's TODO", getUser())
-
-	collectionName := inputText("Collection name", defaultCollectionName)
-
-	fmt.Println("Collection name:", collectionName)
-
-	fmt.Println("Create a new github token at https://github.com/settings/tokens/new with gist permission")
-	fmt.Print("Github authentication token: ")
-	auth, err := term.ReadPassword(int(syscall.Stdin))
-	if len(auth) == 0 {
-		err = fmt.Errorf("Authentication token is required")
-	}
+	_, err := github.NewGistAPI(&c2.LocalConfig.Gist)
 	if err != nil {
 		return err
 	}
-	api := github.NewGitHubGistAPI(string(auth), context.DebugMode)
-
-	err = api.GetToDoConfigFileGist()
-	gistItems := make([]*internal.ToDoItem, 0)
+	simulate := c.Bool("simulate")
+	diffCount, log, err := c2.Collection.GistSync(&c2.LocalConfig.Gist)
 	if err != nil {
-		if err.Error() == "Invalid token" {
-			fmt.Println("Invalid token")
-			return err
-		}
-	} else {
-		if api.GetConfigFileContent() == nil {
-			gistConfig, err := internal.ParseCollectionData(api.ConfigFileContent)
-			if err == nil {
-				gistItems = gistConfig.Items
-			}
-		}
+		return err
 	}
-	config := internal.Config{
-		Authorization: string(auth),
-		ToDoListName:  collectionName,
+	if diffCount == 0 {
+		return fmt.Errorf("No changes detected")
 	}
-	collection := internal.ToDoCollection{
-		Config: config,
+	for _, line := range log {
+		logger.Infof("  %s", line)
 	}
-
-	existentConfig, err := internal.ParseCollectionFile(configFile)
-	if err == nil {
-		if len(existentConfig.Items) > 0 {
-			collection.Items = existentConfig.Items
-		}
+	if simulate {
+		c2.CancelSaving = true
+		return fmt.Errorf("Simulating sync: no changes will be made")
 	}
-	collection.Items = internal.MergeToDoItems(collection.Items, gistItems)
-	err = collection.Save(configFile)
-	if err == nil {
-		log.Printf("Collection saved to %s", configFile)
-		err = api.SetConfigFileGist(configFile)
-		if err == nil {
-			if collection.Config.GistId != api.GistId {
-				collection.Config.GistId = api.GistId
-				collection.Save(configFile)
-			}
-			log.Printf("Collection saved to gist %s", api.GistId)
-		} else {
-			log.Printf("Error saving collection to gist %v", err)
-		}
-	} else {
-		log.Printf("Error saving collection to %s: %v", configFile, err)
-	}
-	return err
+	return nil
 
 }
-

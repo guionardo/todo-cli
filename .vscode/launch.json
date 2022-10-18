@@ -5,12 +5,72 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Default",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug"],
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Setup",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["setup"],
+      "args": ["--debug", "setup"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup Show",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["setup", "show"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup Shell",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["setup", "shell"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup New",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "envFile": "${workspaceFolder}/.env",
+      "args": [
+        "setup",
+        "new",
+        "--token",
+        "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",
+        "--force"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup Token",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "envFile": "${workspaceFolder}/.env",
+      "args": [
+        "setup",
+        "sync",
+        "--token",
+        "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",
+        "--auto-sync",
+        "false"
+      ],
       "console": "integratedTerminal"
     },
     {
@@ -19,7 +79,115 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["add", "TESTE","-t","cli"],
+      "args": ["--debug", "add", "--tags", "cli", "--title", "TESTE DE TODO"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Update",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": [
+        "--debug",
+        "update",
+        "--title",
+        "TESTE DE TO-DO 2",
+        "--parent-id",
+        "1",
+        "--id",
+        "2"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "List",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug", "list"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Complete",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug", "complete", "2"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Act",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["act", "1"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Notify",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["notify", "--c", "--d"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup integration",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["setup", "shell"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Delete",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["delete", "2"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Sync",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug", "sync", "--simulate"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Setup Backup",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["setup", "backup"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Backup",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug", "backup"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Backup List",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["--debug", "backup", "list"],
       "console": "integratedTerminal"
     }
   ]

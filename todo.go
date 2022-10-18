@@ -1,14 +1,14 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/guionardo/todo-cli/cmd"
+	"github.com/guionardo/todo-cli/pkg/logger"
 )
 
 func main() {
 	if err := cmd.App().Run(os.Args); err != nil {
-		log.Fatal(err)
+		logger.Fatalf("%v", err)
 	}
 }

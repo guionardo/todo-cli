@@ -2,7 +2,7 @@ package notify
 
 import (
 	"github.com/0xAX/notificator"
-	"github.com/guionardo/todo-cli/internal"
+	"github.com/guionardo/todo-cli/pkg/todo"
 )
 
 type DesktopNotifier struct {
@@ -20,7 +20,7 @@ func (n *DesktopNotifier) Notify(title string, message string) {
 	notify.Push("title", message, "", notificator.UR_NORMAL)
 }
 
-func (n *DesktopNotifier) NotifyItem(item internal.ToDoItem) {
+func (n *DesktopNotifier) NotifyItem(item todo.ToDoItem) {
 	n.Notify("ToDo Cli", item.NotifyText()+"\n"+item.StringNoColor())
 }
 

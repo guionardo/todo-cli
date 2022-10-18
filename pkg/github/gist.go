@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/guionardo/todo-cli/pkg/logger"
 )
 
 // https://docs.github.com/pt/rest/gists/gists#list-gists-for-the-authenticated-user
@@ -27,31 +28,34 @@ type GitHubGistAPI struct {
 	ConfigFileContent []byte
 	UpdatedAt         time.Time
 	client            *http.Client
-	Debug             bool
+	enabled           rune
+	check             chan rune
+	LastError         error
 }
 
-func NewGitHubGistAPI(authorization string, debug bool) *GitHubGistAPI {
-	return &GitHubGistAPI{
+func NewGitHubGistAPI(authorization string) *GitHubGistAPI {
+	api := &GitHubGistAPI{
 		Authorization:   authorization,
 		GistDescription: DefaultGistDescription,
 		client:          &http.Client{},
-		Debug:           debug,
+		check:           make(chan rune),
+		enabled:         ' ',
 	}
-}
-func (api *GitHubGistAPI) Log(format string, v ...interface{}) {
-	if api.Debug {
-		log.Printf(format, v...)
-	}
+	go api.checkAuth()
+	return api
 }
 
-func (api *GitHubGistAPI) GetToDoConfigFileGist() error {
-	if api.Authorization == "" {
-		return fmt.Errorf("Authorization is empty")
-	}
-	api.Log("GetToDoConfigFileGist")
-	req, err := http.NewRequest("GET", "https://api.github.com/gists", nil)
+func (api *GitHubGistAPI) request(method string, url string, debugMsg string, body []byte) (content []byte, err error) {
+	time_start := time.Now()
+
+	defer func() {
+		logger.Debugf("%s took %v", debugMsg, time.Since(time_start))
+	}()
+
+	logger.Debugf("GetToDoConfigFileGist")
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header = http.Header{
 		"Authorization": {fmt.Sprintf("Bearer %s", api.Authorization)},
@@ -60,19 +64,67 @@ func (api *GitHubGistAPI) GetToDoConfigFileGist() error {
 
 	res, err := api.client.Do(req)
 	if err != nil {
-		return err
+		debugMsg = fmt.Sprintf("Error: %s - %s", err.Error(), debugMsg)
+		return nil, err
 	}
-	if res.StatusCode == 403 {
-		return errors.New("Invalid token")
+	if res.StatusCode >= 300 {
+		debugMsg = fmt.Sprintf("Error: %s - %s", debugMsg, res.Status)
+		return nil, errors.New(res.Status)
 	}
-	if res.StatusCode != 200 {
-		return fmt.Errorf("Invalid status code: %d", res.StatusCode)
+	return ioutil.ReadAll(res.Body)
+}
+
+func (api *GitHubGistAPI) checkAuth() {
+	if api.Authorization == "" {
+		api.check <- 'N' // No authorization
+		return
 	}
-	var gistList []GistResponse
-	err = json.NewDecoder(res.Body).Decode(&gistList)
+	if err := api.ValidateAuth(api.Authorization); err != nil {
+		api.LastError = err
+		api.check <- 'X' // Invalid authorization
+	} else {
+		api.check <- 'Y' // Valid authorization
+	}
+}
+func (api *GitHubGistAPI) Enabled() bool {
+	if api.enabled == ' ' {
+		api.enabled = <-api.check
+	}
+	return api.enabled == 'Y'
+}
+
+func (api *GitHubGistAPI) ValidateAuth(authorization string) error {
+	if len(authorization) == 0 {
+		return errors.New("Authorization is empty")
+	}
+	_, err := api.request("GET", "https://api.github.com/gists", "ValidateAuth", nil)
+	if err != nil {
+		err = fmt.Errorf("Invalid token: %s", err.Error())
+	}
+	// if len(api.ConfigFileRawURL) == 0 {
+	// 	err = api.GetToDoConfigFileGist()
+	// }
+	return err
+}
+
+func (api *GitHubGistAPI) GetToDoConfigFileGist() error {
+	if !api.Enabled() {
+		return errors.New("")
+	}
+	if api.Authorization == "" {
+		return fmt.Errorf("Authorization is empty")
+	}
+	logger.Debugf("GetToDoConfigFileGist")
+	content, err := api.request("GET", "https://api.github.com/gists", "GetToDoConfigFileGist", nil)
 	if err != nil {
 		return err
 	}
+	var gistList []GistResponse
+	err = json.Unmarshal(content, &gistList)
+	if err != nil {
+		return err
+	}
+
 	var configGist *GistResponse
 	for _, gist := range gistList {
 		if gist.Description == api.GistDescription && len(gist.Files) == 1 {
@@ -86,10 +138,10 @@ func (api *GitHubGistAPI) GetToDoConfigFileGist() error {
 		}
 	}
 	if configGist == nil {
-		api.Log("Config GIST not found")
+		logger.Debugf("Config GIST not found")
 		return fmt.Errorf("Config gist not found")
 	}
-	api.Log("Config GIST found: %s @ %v", configGist.Description, configGist.UpdatedAt)
+	logger.Debugf("Config GIST found: %s @ %v", configGist.Description, configGist.UpdatedAt)
 	return nil
 
 }
@@ -101,7 +153,7 @@ func (api *GitHubGistAPI) GetConfigFileContent() error {
 	if api.ConfigFileRawURL == "" {
 		return fmt.Errorf("ConfigFileRawURL is empty")
 	}
-	api.Log("GetConfigFileContent")
+	logger.Debugf("GetConfigFileContent")
 	req, err := http.NewRequest("GET", api.ConfigFileRawURL, nil)
 	req.Header = http.Header{
 		"Authorization": {fmt.Sprintf("Bearer %s", api.Authorization)},
@@ -117,7 +169,7 @@ func (api *GitHubGistAPI) GetConfigFileContent() error {
 	body, err := ioutil.ReadAll(res.Body)
 	if err == nil {
 		api.ConfigFileContent = body
-		api.Log("Config file content:\n%s", string(body))
+		logger.Debugf("Config file content:\n%s", string(body))
 	} else {
 		api.ConfigFileContent = nil
 	}
@@ -163,7 +215,7 @@ func (api *GitHubGistAPI) SetConfigFileGist(configFileName string) error {
 	if err != nil {
 		return err
 	}
-	api.Log("SetConfigFileGist: %s %s", api.GistDescription, configFileName)
+	logger.Debugf("SetConfigFileGist: %s %s", api.GistDescription, configFileName)
 	req.Header = http.Header{
 		"Authorization": {fmt.Sprintf("Bearer %s", api.Authorization)},
 		"Accept":        {"application/vnd.github.v3+json"},
@@ -183,7 +235,7 @@ func (api *GitHubGistAPI) SetConfigFileGist(configFileName string) error {
 	api.GistId = gistResponse.Id
 	api.ConfigFileRawURL = gistResponse.Files[CollectionFileName].RawURL
 	api.UpdatedAt = gistResponse.UpdatedAt
-	api.Log("Config GIST created: %s @ %v", gistResponse.Description, gistResponse.UpdatedAt)
+	logger.Debugf("Config GIST created: %s @ %v", gistResponse.Description, gistResponse.UpdatedAt)
 	return nil
 }
 
@@ -209,63 +261,3 @@ func (api *GitHubGistAPI) DeleteGist() error {
 	api.GistId = ""
 	return nil
 }
-
-// func GetToDoConfigFileGist(auth string) ([]byte, error) {
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest("GET", "https://api.github.com/gists", nil)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	req.Header = http.Header{
-// 		"Authorization": {fmt.Sprintf("Bearer %s", auth)},
-// 		"Accept":        {"application/vnd.github.v3+json"},
-// 	}
-
-// 	res, err := client.Do(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if res.StatusCode != 200 {
-// 		return nil, fmt.Errorf("Invalid status code: %d", res.StatusCode)
-// 	}
-// 	var gistList []GistResponse
-// 	err = json.NewDecoder(res.Body).Decode(&gistList)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	var configGist *GistResponse
-// 	for _, gist := range gistList {
-// 		if gist.Description == "todo config" && len(gist.Files) == 1 {
-// 			if _, ok := gist.Files[CollectionFileName]; ok {
-// 				configGist = &gist
-// 				break
-// 			}
-// 		}
-// 	}
-// 	if configGist == nil {
-// 		return nil, fmt.Errorf("Config gist not found")
-// 	}
-
-// 	req, err = http.NewRequest("GET", configGist.Files[CollectionFileName].RawURL, nil)
-// 	req.Header = http.Header{
-// 		"Authorization": {fmt.Sprintf("Bearer %s", auth)},
-// 		"Accept":        {"application/vnd.github.v3+json"},
-// 	}
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	res, err = client.Do(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var collection ToDoCollection
-// 	err = yaml.NewDecoder(res.Body).Decode(&collection)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	//collection.Save()
-// 	//TODO: Continuar implementação
-
-// 	return nil, err
-// }

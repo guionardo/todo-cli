@@ -1,0 +1,14 @@
+@startmindmap
+* CMD
+** setup
+*** show
+*** new
+*** token
+*** shell
+** add
+** delete
+** list
+** notify
+*** console
+*** desktop
+@endmindmap

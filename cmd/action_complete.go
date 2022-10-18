@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
+	"time"
 
-	"github.com/guionardo/todo-cli/internal"
+	"github.com/guionardo/todo-cli/pkg/ctx"
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,33 +23,20 @@ var (
 				Usage:   "Undo a completed todo item",
 			},
 		},
+		Before: ctx.ChainedContext(ctx.AssertLocalConfig, ctx.AssertValidId),
+		After:  ctx.ChainedContext(ctx.AssertSave, ctx.AssertAutoSychronization),
 	}
 )
 
 func ActionComplete(c *cli.Context) error {
-	context := internal.GetRunningContext(c).AssertExist()
-	if c.NArg() == 0 {
-		return fmt.Errorf("Missing todo-id")
-	}
-	todoId := c.Args().Get(0)
-	id, err := strconv.Atoi(todoId)
-	if err != nil {
-		return fmt.Errorf("Invalid todo-id")
-	}
+	c2 := ctx.ContextFromCtx(c)
 	undo := c.Bool("undo")
-	msg := "Completed"
-	if undo {
-		err = context.Collection.UndoComplete(id)
-	} else {
-		err = context.Collection.Complete(id)
-		msg = "Undo completed"
+	if c2.CurrentToDo.Completed == undo {
+		c2.CurrentToDo.Completed = !undo
+		c2.CurrentToDo.UpdatedAt = time.Now()
+		return nil
 	}
-	if err == nil {
-		err = context.Collection.Save(context.CollectionFileName)
-		if err == nil {
-			context.Collection.GISTSync(context.DebugMode)
-			fmt.Printf("%s todo: %d", msg, id)
-		}
-	}
-	return err
+	c2.CancelSaving = true
+	c2.CancelSync = true
+	return fmt.Errorf("To-do item #%d no change", c2.CurrentToDo.Index)
 }

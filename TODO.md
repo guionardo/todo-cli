@@ -2,6 +2,6 @@
 
 Updated: {LAST_UPDATE}
 
-* [x] ITEM
-* [ ] (DUE_TO) ITEM 2
-* [ ] #{TAG} (DUE_TO) ITEM 3
+* [x] 001 ITEM
+* [ ] 002 (DUE_TO) ITEM 2
+* [ ] 003 #{TAG} (DUE_TO) ITEM 3
