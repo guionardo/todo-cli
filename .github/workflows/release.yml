@@ -21,12 +21,17 @@ jobs:
             goos: windows
     steps:
       - uses: actions/checkout@v3
+      - name: Set APP_VERSION env
+        run: echo APP_VERSION=$(echo ${GITHUB_REF} | rev | cut -d'/' -f 1 | rev ) >> ${GITHUB_ENV}
+      - name: Set BUILD_TIME env
+        run: echo BUILD_TIME=$(date -Iseconds) >> ${GITHUB_ENV}
       - uses: wangyoucao577/go-release-action@v1.30
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: "https://go.dev/dl/go1.19.linux-amd64.tar.gz"
+          goversion: "https://go.dev/dl/go1.19.2.linux-amd64.tar.gz"
           project_path: "."
           binary_name: "${{ matrix.binary_name }}"
           extra_files: LICENSE README.md
+          ldflags: -X "cmd.BuildDate=${{ env.BUILD_TIME }}" -X "cmd.BuildHost=github.com" -X "cmd.Version=${{ env.APP_VERSION }}"
