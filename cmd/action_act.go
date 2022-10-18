@@ -10,7 +10,7 @@ var (
 		Name:      "act",
 		Usage:     "Set current timestamp as action for item",
 		Aliases:   []string{"a"},
-		Before:    ctx.ChainedContext(ctx.AssertLocalConfig, ctx.AssertAutoSychronization),
+		Before:    ctx.ChainedContext(ctx.AssertLocalConfig, ctx.AssertAutoSychronization, ctx.AssertValidId),
 		Action:    ActionAct,
 		ArgsUsage: "[todo-id]",
 		Category:  "Tasks",
@@ -21,10 +21,5 @@ var (
 func ActionAct(c *cli.Context) error {
 	context := ctx.ContextFromCtx(c)
 
-	id, err := getToDoId(c)
-	if err != nil {
-		return err
-	}
-
-	return context.SetExit(context.Collection.DoAct(id), "Set action to #%d", id)
+	return context.SetExit(context.Collection.DoAct(context.CurrentToDo.Index), "Set action to #%d", context.CurrentToDo.Index)
 }

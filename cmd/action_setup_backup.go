@@ -22,14 +22,6 @@ func GetCommandSetupBackup() *cli.Command {
 		Usage:  "Setup of backup",
 		Action: ActionSetupBackup,
 		Before: ctx.ChainedContext(ctx.AssertLocalConfig, getCurrentConfig),
-		// Before: func(c *cli.Context) error {
-		// 	context := domain.GetRunningContext(c).AssertExist()
-
-		// 	valueNeddedWarningDays = context.Collection.Config.Backup.BackupNeededWarningDays
-		// 	valueMaxCount = context.Collection.Config.Backup.BackupMaxCount
-		// 	valueAutoBackup = context.Collection.Config.Backup.AutoBackup
-		// 	return nil
-		// },
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{

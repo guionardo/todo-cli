@@ -25,7 +25,7 @@ jobs:
         run: echo APP_VERSION=$(echo ${GITHUB_REF} | rev | cut -d'/' -f 1 | rev ) >> ${GITHUB_ENV}
       - name: Set BUILD_TIME env
         run: echo BUILD_TIME=$(date -Iseconds) >> ${GITHUB_ENV}
-      - uses: wangyoucao577/go-release-action@v1.30
+      - uses: wangyoucao577/go-release-action@v1.32
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}

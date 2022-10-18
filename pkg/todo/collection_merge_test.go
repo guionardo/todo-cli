@@ -2,6 +2,7 @@ package todo
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 )
@@ -26,11 +27,15 @@ func TestMergeCollections(t *testing.T) {
 			items1[2],
 			items2[2],
 		}
+		SortList(new_items)
+		SortList(expected)
 		if !reflect.DeepEqual(new_items, expected) {
 			t.Errorf("MergeToDoItems() = %v, want %v", new_items, expected)
 		}
 
 		expected_deleted := []string{items1[1].Id}
+		sort.Strings(deleted)
+		sort.Strings(expected_deleted)
 		if !reflect.DeepEqual(deleted, expected_deleted) {
 			t.Errorf("MergeToDoItems() = %v, want %v", deleted, expected_deleted)
 		}

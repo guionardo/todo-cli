@@ -6,11 +6,12 @@ import (
 	"testing"
 )
 
-func TestBackup(t *testing.T) {
+func TestBackup_(t *testing.T) {
+	//  Create data file
+	dataFile := path.Join(t.TempDir(), "data.txt")
+
 	t.Run("Backup", func(t *testing.T) {
 		t.Skip()
-		//  Create data file
-		dataFile := path.Join(t.TempDir(), "data.txt")
 		if err := os.WriteFile(dataFile, []byte("Hello World"), 0644); err != nil {
 			t.Errorf("Error writing data file: %v", err)
 			return
