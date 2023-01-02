@@ -25,7 +25,7 @@ func setupShellCmd(remove bool, command string) error {
 	shellProfile, _ := utils.GetShellData()
 	content, err := os.ReadFile(shellProfile)
 	if err != nil {
-		return fmt.Errorf("Error reading shell profile: %v", err)
+		return fmt.Errorf("error reading shell profile: %v", err)
 	}
 	lines := strings.Split(string(content), "\n")
 	found := false

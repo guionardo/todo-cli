@@ -20,7 +20,7 @@ func (n *DesktopNotifier) Notify(title string, message string) {
 	notify.Push("title", message, "", notificator.UR_NORMAL)
 }
 
-func (n *DesktopNotifier) NotifyItem(item todo.ToDoItem) {
+func (n *DesktopNotifier) NotifyItem(item todo.Item) {
 	n.Notify("ToDo Cli", item.NotifyText()+"\n"+item.StringNoColor())
 }
 

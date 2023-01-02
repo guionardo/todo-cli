@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-type BackupCollection struct {
-	SourcePath string                 // Path to the source folder
-	Backups    map[string]*BackupFile // Map of files and their backups
+type Collection struct {
+	SourcePath string           // Path to the source folder
+	Backups    map[string]*File // Map of files and their backups
 }
 
-func NewBackupCollection(sourcePath string, config BackupConfig, files ...string) (bc *BackupCollection, err error) {
-	bc = &BackupCollection{
+func NewBackupCollection(sourcePath string, config Config, files ...string) (bc *Collection, err error) {
+	bc = &Collection{
 		SourcePath: sourcePath,
-		Backups:    make(map[string]*BackupFile),
+		Backups:    make(map[string]*File),
 	}
 	for _, file := range files {
 		bkp, err := CreateBackup(path.Join(sourcePath, file), config.BackupFolder, config)
@@ -25,7 +25,7 @@ func NewBackupCollection(sourcePath string, config BackupConfig, files ...string
 	return
 }
 
-func (bc *BackupCollection) DoBackup() (err error) {
+func (bc *Collection) DoBackup() (err error) {
 	for _, bkp := range bc.Backups {
 		if _, err = bkp.DoBackup(); err != nil {
 			return
@@ -34,7 +34,7 @@ func (bc *BackupCollection) DoBackup() (err error) {
 	return
 }
 
-func (bc *BackupCollection) AutoBackup(config BackupConfig) (done bool, err error) {
+func (bc *Collection) AutoBackup(config Config) (done bool, err error) {
 	if !config.AutoBackup {
 		return
 	}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 
+	"github.com/guionardo/go-gstools/gist"
 	"github.com/guionardo/todo-cli/pkg/ctx"
 	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/urfave/cli/v2"
@@ -28,8 +29,11 @@ func App() *cli.App {
 		EnableBashCompletion: true,
 		Before: func(c *cli.Context) error {
 			logger.SetLogger(c.Bool("debug"))
-			logger.Debugf("Debug mode enabled")
-			c.Context = context.WithValue(c.Context, "ctx", ctx.ContextFromCli(c))
+			if c.Bool("debug") {
+				logger.Debugf("Debug mode enabled")
+				gist.SetDefaultLogger()
+			}
+			c.Context = context.WithValue(c.Context, ctx.Key, ctx.ContextFromCli(c))
 			return nil
 		},
 		Suggest: true,

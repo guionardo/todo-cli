@@ -9,12 +9,12 @@ import (
 
 func TestMergeCollections(t *testing.T) {
 	t.Run("MergeToDoItems", func(t *testing.T) {
-		items1 := []*ToDoItem{
+		items1 := []*Item{
 			{Id: "I01", Title: "item1", UpdatedAt: time.Now()},
 			{Id: "I02", Title: "item2", UpdatedAt: time.Now(), Deleted: true},
 			{Id: "I03", Title: "item3", UpdatedAt: time.Now()},
 		}
-		items2 := []*ToDoItem{
+		items2 := []*Item{
 			{Id: items1[0].Id, Title: "itemA", UpdatedAt: time.Now().Add(time.Hour)},
 			{Id: items1[1].Id, Title: "itemB", UpdatedAt: time.Now().Add(time.Hour), Deleted: true},
 			{Id: "I04", Title: "itemC", UpdatedAt: time.Now()},
@@ -22,7 +22,7 @@ func TestMergeCollections(t *testing.T) {
 		new_items, deleted, logs, diffCount, upload := MergeCollections(items1, items2)
 		t.Logf("changes: %v", logs)
 
-		expected := []*ToDoItem{
+		expected := []*Item{
 			items2[0],
 			items1[2],
 			items2[2],
@@ -50,11 +50,11 @@ func TestMergeCollections(t *testing.T) {
 
 func TestMergeEqualCollections(t *testing.T) {
 	t.Run("MergeEqual", func(t *testing.T) {
-		i0 := &ToDoItem{Id: "I01", Title: "item1", UpdatedAt: time.Now()}
-		i1 := &ToDoItem{Id: "I02", Title: "item2", UpdatedAt: time.Now(), Deleted: true}
-		i2 := &ToDoItem{Id: "I03", Title: "item3", UpdatedAt: time.Now()}
-		items1 := []*ToDoItem{i0, i1, i2}
-		items2 := []*ToDoItem{i0, i1, i2}
+		i0 := &Item{Id: "I01", Title: "item1", UpdatedAt: time.Now()}
+		i1 := &Item{Id: "I02", Title: "item2", UpdatedAt: time.Now(), Deleted: true}
+		i2 := &Item{Id: "I03", Title: "item3", UpdatedAt: time.Now()}
+		items1 := []*Item{i0, i1, i2}
+		items2 := []*Item{i0, i1, i2}
 		new_items, deleted, logs, diffCount, _ := MergeCollections(items1, items2)
 		t.Logf("changes: %v", logs)
 		if len(deleted) != 1 {

@@ -8,11 +8,8 @@ import (
 )
 
 var (
-	valueNeddedWarningDays int
-	valueMaxCount          int
-	valueAutoBackup        bool
-	currentConfig          = &ctx.LocalConfig{
-		Backup: backup.BackupConfig{},
+	currentConfig = &ctx.LocalConfig{
+		Backup: backup.Config{},
 	}
 )
 

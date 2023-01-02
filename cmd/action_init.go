@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	_ "embed"
+
 	"github.com/guionardo/todo-cli/pkg/utils"
 	"github.com/urfave/cli/v2"
 )
+
+//go:embed action_init.sh
+var ActionInitSh string
 
 var (
 	InitCommand = &cli.Command{
@@ -43,25 +48,7 @@ func ActionInitBash(c *cli.Context) error {
 
 func ActionInitPs1(c *cli.Context) error {
 	_, thisPath := utils.GetShellData()
-	ps1 := `
-if [[ "$PROMPT_COMMAND" == *__tdc_ps1* ]]; then
-	exit 0
-fi
-
-TCC_TIME=0
-
-__tdc_ps1() {	
-    local tcc_elapsed=$((SECONDS - TCC_TIME))
-    if [[ "$TCC_TIME" -eq "0" || "$tcc_elapsed" -gt "#PERIOD#" ]]; then
-        TCC_TIME=$SECONDS		
-        #THISPATH# notify
-    fi
-}
-
-PROMPT_COMMAND="__tdc_ps1 $PROMPT_COMMAND"
-echo "todo-cli ps1 initialized (every #PERIOD# seconds)"
-`
-	ps1 = strings.ReplaceAll(ps1, "#PERIOD#", fmt.Sprintf("%d", c.Int("period")))
+	ps1 := strings.ReplaceAll(ActionInitSh, "#PERIOD#", fmt.Sprintf("%d", c.Int("period")))
 	ps1 = strings.ReplaceAll(ps1, "#THISPATH#", thisPath)
 	fmt.Print(ps1)
 	return nil

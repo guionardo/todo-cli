@@ -7,34 +7,34 @@ import (
 
 func TestToDoCollection_GetTreeList(t *testing.T) {
 	t.Run("TreeList", func(t *testing.T) {
-		collection := &ToDoCollection{
-			Items:        make(map[string]*ToDoItem),
+		collection := &Collection{
+			Items:        make(map[string]*Item),
 			DeletedItems: make([]string, 0),
 		}
-		collection.Add(&ToDoItem{
+		collection.Add(&Item{
 			Id:    "1",
 			Index: 1,
 			Title: "Item 1",
 			DueTo: time.Now().Add(time.Hour * 24),
 		})
-		collection.Add(&ToDoItem{
+		collection.Add(&Item{
 			Id:    "2",
 			Index: 2,
 			Title: "Item 2",
 		})
-		collection.Add(&ToDoItem{
+		collection.Add(&Item{
 			Id:       "3",
 			Index:    3,
 			Title:    "Item 2.1",
 			ParentId: "2",
 			DueTo:    time.Now().Add(time.Hour * 24 * 2),
 		})
-		collection.Add(&ToDoItem{
+		collection.Add(&Item{
 			Id:    "4",
 			Index: 4,
 			Title: "Item 3",
 		})
-		collection.Add(&ToDoItem{
+		collection.Add(&Item{
 			Id:       "5",
 			Index:    5,
 			Title:    "Item 2.2",
@@ -56,23 +56,23 @@ func TestToDoCollection_GetTreeList(t *testing.T) {
 func TestToDoItem_StringNoColor(t *testing.T) {
 	tests := []struct {
 		name string
-		item *ToDoItem
+		item *Item
 		want string
 	}{
-		{name: "Just title", item: &ToDoItem{Title: "Test"}, want: "#000 Test"},
+		{name: "Just title", item: &Item{Title: "Test"}, want: "#000 Test"},
 		{
 			name: "Title with tags",
-			item: &ToDoItem{Index: 1, Title: "Test", Tags: []string{"tag1", "tag2"}},
+			item: &Item{Index: 1, Title: "Test", Tags: []string{"tag1", "tag2"}},
 			want: "#001 (tag1 tag2) Test",
 		},
 		{
 			name: "Title with due date delayed",
-			item: &ToDoItem{Index: 1, Title: "Test", DueTo: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
+			item: &Item{Index: 1, Title: "Test", DueTo: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)},
 			want: "#001 ⌛ (2021-01-01) Test",
 		},
 		{
 			name: "Title with due date future",
-			item: &ToDoItem{Index: 1, Title: "Test", DueTo: time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC)},
+			item: &Item{Index: 1, Title: "Test", DueTo: time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC)},
 			want: "#001 ⏱ (2099-12-31) Test",
 		},
 	}

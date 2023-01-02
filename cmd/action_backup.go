@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	backupPath    = ""
 	BackupCommand = &cli.Command{
 		Name:     "backup",
 		Usage:    "Run a backup of the todo list",
@@ -42,12 +41,6 @@ var (
 		},
 	}
 )
-
-func getBackupPath(c *cli.Context) error {
-	c2 := ctx.ContextFromCtx(c)
-	backupPath = c2.LocalConfig.Backup.BackupFolder
-	return nil
-}
 
 func ActionBackupRun(c *cli.Context) error {
 	c2 := ctx.ContextFromCtx(c)

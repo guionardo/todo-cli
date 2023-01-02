@@ -23,7 +23,7 @@ func SetLogger(debugMode bool) {
 }
 
 func printf(clr string, format string, args ...interface{}) {
-	fmt.Fprintf(Log.Output, color.Ize(fmt.Sprintf(format, args...), clr))
+	fmt.Fprint(Log.Output, color.Ize(fmt.Sprintf(format, args...), clr))
 	fmt.Fprintln(Log.Output)
 }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type ToDoItem struct {
+type Item struct {
 	Id         string    `yaml:"id"`
 	Index      int       `yaml:"index"`
 	Title      string    `yaml:"title"`

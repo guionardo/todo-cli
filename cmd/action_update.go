@@ -81,7 +81,7 @@ func ActionUpdate(c *cli.Context) error {
 		if pId > 0 {
 			parentItem := context.Collection.Get(pId)
 			if parentItem == nil {
-				return fmt.Errorf("Parent ID %d not found", pId)
+				return fmt.Errorf("parent ID %d not found", pId)
 			}
 			if parentItem.Id != context.CurrentToDo.ParentId {
 				context.CurrentToDo.ParentId = parentItem.Id
@@ -92,7 +92,7 @@ func ActionUpdate(c *cli.Context) error {
 	if !changed {
 		context.CancelSaving = true
 		context.CancelSync = true
-		return fmt.Errorf("Nothing to change")
+		return fmt.Errorf("nothing to change")
 	}
 	context.CurrentToDo.UpdatedAt = time.Now()
 

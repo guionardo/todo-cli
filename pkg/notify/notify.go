@@ -5,7 +5,7 @@ import "github.com/guionardo/todo-cli/pkg/todo"
 type (
 	Notifier interface {
 		Notify(title string, message string)
-		NotifyItem(item todo.ToDoItem)
+		NotifyItem(item todo.Item)
 		Info() NotifierInfo
 		BeforeNotify()
 	}

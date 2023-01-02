@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/guionardo/todo-cli/pkg/ctx"
-	"github.com/guionardo/todo-cli/pkg/github"
+
 	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -30,26 +28,10 @@ var (
 
 func ActionSync(c *cli.Context) error {
 	c2 := ctx.ContextFromCtx(c)
-
-	_, err := github.NewGistAPI(&c2.LocalConfig.Gist)
-	if err != nil {
-		return err
+	logs, err := c2.GistSync()
+	for _, log := range logs {
+		logger.Infof(log)
 	}
-	simulate := c.Bool("simulate")
-	diffCount, log, err := c2.Collection.GistSync(&c2.LocalConfig.Gist)
-	if err != nil {
-		return err
-	}
-	if diffCount == 0 {
-		return fmt.Errorf("No changes detected")
-	}
-	for _, line := range log {
-		logger.Infof("  %s", line)
-	}
-	if simulate {
-		c2.CancelSaving = true
-		return fmt.Errorf("Simulating sync: no changes will be made")
-	}
-	return nil
+	return err
 
 }

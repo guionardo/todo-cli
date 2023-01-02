@@ -6,7 +6,6 @@ import (
 
 	"github.com/guionardo/todo-cli/pkg/backup"
 	"github.com/guionardo/todo-cli/pkg/ctx"
-	"github.com/guionardo/todo-cli/pkg/github"
 	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/guionardo/todo-cli/pkg/todo"
 	"github.com/guionardo/todo-cli/pkg/utils"
@@ -40,7 +39,7 @@ func GetCommandSetupNew() *cli.Command {
 	}
 }
 
-func checkFileExists(localFile string, backupFolder string, force bool, fileTitle string, backupCfg backup.BackupConfig) error {
+func checkFileExists(localFile string, backupFolder string, force bool, fileTitle string, backupCfg backup.Config) error {
 	if _, err := os.Stat(localFile); os.IsNotExist(err) {
 		return nil
 	}
@@ -54,7 +53,7 @@ func checkFileExists(localFile string, backupFolder string, force bool, fileTitl
 	}
 	backupFile, err := bkp.DoBackup()
 	if err != nil && len(backupFile) == 0 {
-		return fmt.Errorf("Error backing up %s %s: %v", fileTitle, localFile, err)
+		return fmt.Errorf("error backing up %s %s: %v", fileTitle, localFile, err)
 	}
 	logger.Infof("Backup file %s -> %s", localFile, backupFile)
 	return nil
@@ -80,12 +79,12 @@ func ActionSetupNew(c *cli.Context) (err error) {
 
 	name := c.String("name")
 	if len(name) == 0 {
-		return fmt.Errorf("Missing name")
+		return fmt.Errorf("missing name")
 	}
 
 	config := ctx.LocalConfig{
 		ToDoListName: name,
-		Gist:         github.GetDefaultGistConfig(),
+		Gist:         ctx.GetDefaultGistConfig(),
 		Backup:       backup.GetDefaultBackupConfig(context.DataFolder),
 	}
 	if err = config.Save(context.LocalConfigFile); err != nil {
@@ -106,7 +105,7 @@ func ActionSetupNew(c *cli.Context) (err error) {
 
 	err = config.Gist.SetToken(token)
 	if err != nil {
-		err = fmt.Errorf("Error setting token: %v", err)
+		logger.Warnf("error setting token: %v", err)
 	}
 	err = config.Save(context.LocalConfigFile)
 

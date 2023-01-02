@@ -20,7 +20,7 @@ func TestBackup_(t *testing.T) {
 		// Create backup dir
 		backupDir := path.Join(t.TempDir(), "backup")
 
-		backup, err := CreateBackup(dataFile, backupDir, BackupConfig{})
+		backup, err := CreateBackup(dataFile, backupDir, Config{})
 		if err != nil {
 			t.Errorf("Error creating backup: %v", err)
 			return

@@ -5,7 +5,7 @@ import (
 	"path"
 )
 
-type BackupConfig struct {
+type Config struct {
 	BackupNeededWarningDays int    `yaml:"backup_needed_warning_days"`
 	BackupMaxCount          int    `yaml:"backup_max_count"`
 	AutoBackup              bool   `yaml:"auto_backup"`
@@ -13,13 +13,13 @@ type BackupConfig struct {
 	BackupFolder            string `yaml:"backup_folder"`
 }
 
-func (bc BackupConfig) String() string {
+func (bc Config) String() string {
 	return fmt.Sprintf("BackupNeededWarningDays: %d\nBackupMaxCount: %d\nAutoBackup: %v\nAutoBackupIntervalDays: %d\nBackupFolder: %s\n",
 		bc.BackupNeededWarningDays, bc.BackupMaxCount, bc.AutoBackup, bc.AutoBackupIntervalDays, bc.BackupFolder)
 }
 
-func GetDefaultBackupConfig(dataFolder string) BackupConfig {
-	return BackupConfig{
+func GetDefaultBackupConfig(dataFolder string) Config {
+	return Config{
 		BackupNeededWarningDays: 7,
 		BackupMaxCount:          10,
 		AutoBackup:              true,

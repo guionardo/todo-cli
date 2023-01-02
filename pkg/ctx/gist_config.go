@@ -1,8 +1,11 @@
-package github
+package ctx
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/guionardo/go-gstools/gist"
 )
 
 type GistConfig struct {
@@ -15,7 +18,7 @@ type GistConfig struct {
 	AutoSyncInterval time.Duration `yaml:"auto_sync_interval"`
 }
 
-func (c GistConfig) String() string {
+func (c *GistConfig) String() string {
 	return fmt.Sprintf("GistId: %s\nAuthorization: %s\nURL: %s\nAutoSync: %t\n",
 		c.GistId, c.Authorization, c.RawURL, c.AutoSync)
 }
@@ -36,17 +39,19 @@ func (c *GistConfig) SetToken(token string) error {
 	if token == c.Authorization {
 		return nil
 	}
-	oldAuth := c.Authorization
-	c.Authorization = token
-
-	api, err := NewGistAPI(c)
+	gistCtx, err := gist.NewGitContext(token, context.Background())
 	if err != nil {
-		c.Authorization = oldAuth
 		return err
 	}
 
-	c.GistDescription = api.Config.GistDescription
-	c.GistId = api.Config.GistId
-	c.RawURL = api.Config.RawURL
+	c.Authorization = token
+
+	remoteGist, err := gist.GetGistByDescription(gistCtx, c.GistDescription)
+	if err == nil && remoteGist != nil {
+		c.GistId = *remoteGist.ID
+		c.GistDescription = *remoteGist.Description
+		c.RawURL = *remoteGist.HTMLURL
+	}
+
 	return nil
 }

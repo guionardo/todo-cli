@@ -2,8 +2,8 @@ package todo
 
 import "sort"
 
-func (collection *ToDoCollection) GetByFilter(tags []string, justCompleted bool, justPending bool) []*ToDoItem {
-	items := make([]*ToDoItem, 0)
+func (collection *Collection) GetByFilter(tags []string, justCompleted bool, justPending bool) []*Item {
+	items := make([]*Item, 0)
 	for _, item := range collection.Items {
 		if justCompleted && !item.Completed {
 			continue
@@ -27,8 +27,8 @@ func (collection *ToDoCollection) GetByFilter(tags []string, justCompleted bool,
 	return items
 }
 
-func (collection *ToDoCollection) GetChildren(id string) []*ToDoItem {
-	items := make([]*ToDoItem, 0)
+func (collection *Collection) GetChildren(id string) []*Item {
+	items := make([]*Item, 0)
 	for _, item := range collection.Items {
 		if item.ParentId == id {
 			items = append(items, item)
@@ -37,7 +37,7 @@ func (collection *ToDoCollection) GetChildren(id string) []*ToDoItem {
 	return items
 }
 
-func SortList(list []*ToDoItem) {
+func SortList(list []*Item) {
 	sort.SliceStable(list, func(i int, j int) bool {
 		return list[i].DueTo.Before(list[j].DueTo)
 	})

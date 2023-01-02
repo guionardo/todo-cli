@@ -10,7 +10,6 @@ func TestApp(t *testing.T) {
 		if app.Name != "todo-cli" {
 			t.Errorf("App.Name = %v, want %v", app.Name, "todo-cli")
 		}
-
 	})
 
 }

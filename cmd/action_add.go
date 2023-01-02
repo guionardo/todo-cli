@@ -61,14 +61,14 @@ func ActionAdd(c *cli.Context) error {
 		if pId > 0 {
 			parentItem := context.Collection.Get(pId)
 			if parentItem == nil {
-				return fmt.Errorf("Parent ID %d not found", pId)
+				return fmt.Errorf("parent ID %d not found", pId)
 			}
 			parentId = parentItem.Id
 		}
 	}
 
 	tags := c.StringSlice("tags")
-	item := &todo.ToDoItem{
+	item := &todo.Item{
 		Id:        todo.NewItemId(),
 		Title:     title,
 		DueTo:     dueDate,

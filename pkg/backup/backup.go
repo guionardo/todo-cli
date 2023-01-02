@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type BackupFile struct {
+type File struct {
 	Source         string
 	BackupPath     string
 	LastBackups    []string
@@ -17,10 +17,10 @@ type BackupFile struct {
 	LastBackupTime time.Time
 }
 
-func CreateBackup(source string, backupPath string, config BackupConfig) (bkp *BackupFile, err error) {
+func CreateBackup(source string, backupPath string, config Config) (bkp *File, err error) {
 	// Check if source path exists
 	if _, err := os.Stat(path.Dir(source)); os.IsNotExist(err) {
-		return nil, fmt.Errorf("Source path %s does not exists", path.Dir(source))
+		return nil, fmt.Errorf("source path %s does not exists", path.Dir(source))
 	}
 
 	stat, err := os.Stat(backupPath)
@@ -28,13 +28,13 @@ func CreateBackup(source string, backupPath string, config BackupConfig) (bkp *B
 	if os.IsNotExist(err) {
 		err = os.Mkdir(backupPath, 0755)
 	} else if !stat.IsDir() {
-		return nil, fmt.Errorf("Backup path %s is not a directory", backupPath)
+		return nil, fmt.Errorf("backup path %s is not a directory", backupPath)
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	bkp = &BackupFile{
+	bkp = &File{
 		Source:     source,
 		BackupPath: backupPath,
 	}
@@ -43,9 +43,9 @@ func CreateBackup(source string, backupPath string, config BackupConfig) (bkp *B
 	return
 }
 
-func (b *BackupFile) DoBackup() (backupFile string, err error) {
+func (b *File) DoBackup() (backupFile string, err error) {
 	if _, err := os.Stat(b.Source); os.IsNotExist(err) {
-		return "", fmt.Errorf("Source file %s does not exists", b.Source)
+		return "", fmt.Errorf("source file %s does not exists", b.Source)
 	}
 
 	if !b.NeedsBackup() {
@@ -60,16 +60,16 @@ func (b *BackupFile) DoBackup() (backupFile string, err error) {
 
 	content, err := os.ReadFile(b.Source)
 	if err != nil {
-		return "", fmt.Errorf("Error reading config file %s: %v", b.Source, err)
+		return "", fmt.Errorf("error reading config file %s: %v", b.Source, err)
 	}
 	err = os.WriteFile(backupFile, content, 0644)
 	if err != nil {
-		return "", fmt.Errorf("Error writing backup file %s: %v", backupFile, err)
+		return "", fmt.Errorf("error writing backup file %s: %v", backupFile, err)
 	}
 	return backupFile, nil
 }
 
-func (b *BackupFile) NeedsBackup() bool {
+func (b *File) NeedsBackup() bool {
 	if b.ReadBackups() != nil || len(b.LastBackups) == 0 {
 		return true
 	}
@@ -78,10 +78,10 @@ func (b *BackupFile) NeedsBackup() bool {
 	return string(sourceContent) != string(backupContent)
 }
 
-func (b *BackupFile) ReadBackups() error {
+func (b *File) ReadBackups() error {
 	files, err := filepath.Glob(path.Join(b.BackupPath, path.Base(b.Source)) + ".*")
 	if err != nil {
-		return fmt.Errorf("Error listing backup files: %v", err)
+		return fmt.Errorf("error listing backup files: %v", err)
 	}
 	if len(files) > 0 {
 		sort.Strings(files)
@@ -97,7 +97,7 @@ func (b *BackupFile) ReadBackups() error {
 	return nil
 }
 
-func (b *BackupFile) PurgeOldBackups(config BackupConfig) error {
+func (b *File) PurgeOldBackups(config Config) error {
 
 	if err := b.ReadBackups(); err != nil {
 		return err
@@ -110,7 +110,7 @@ func (b *BackupFile) PurgeOldBackups(config BackupConfig) error {
 	return nil
 }
 
-func (b *BackupFile) AutoBackup(config BackupConfig) (done bool, err error) {
+func (b *File) AutoBackup(config Config) (done bool, err error) {
 	if !config.AutoBackup {
 		return
 	}

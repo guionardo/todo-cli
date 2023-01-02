@@ -58,10 +58,10 @@ func ActionList(c *cli.Context) error {
 	justDone := c.Bool("done")
 	justPending := c.Bool("pending")
 
-	var items []*todo.ToDoItem
+	var items []*todo.Item
 
 	if c2.CurrentToDo != nil {
-		items = []*todo.ToDoItem{c2.CurrentToDo}
+		items = []*todo.Item{c2.CurrentToDo}
 	} else {
 		items = c2.Collection.GetByFilter(c.StringSlice("tags"), justDone, justPending)
 	}

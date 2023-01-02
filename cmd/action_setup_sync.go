@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/guionardo/todo-cli/pkg/ctx"
-	"github.com/guionardo/todo-cli/pkg/github"
 	"github.com/guionardo/todo-cli/pkg/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -36,14 +35,10 @@ func ActionSetupSync(c *cli.Context) error {
 	if c.IsSet("token") {
 		token := c.String("token")
 		if len(token) > 0 && token != c2.LocalConfig.Gist.Authorization {
-			api, err := github.NewGistAPI(&c2.LocalConfig.Gist)
+			err := c2.LocalConfig.Gist.SetToken(token)
 			if err != nil {
 				return err
 			}
-
-			c2.LocalConfig.Gist.Authorization = token
-			c2.LocalConfig.Gist.GistId = api.Config.GistId
-			c2.LocalConfig.Gist.GistDescription = api.Config.GistDescription
 			changed = true
 		}
 	}
@@ -51,7 +46,7 @@ func ActionSetupSync(c *cli.Context) error {
 		autoSync := c.Bool("auto-sync")
 		if c2.LocalConfig.Gist.AutoSync != autoSync {
 			if autoSync && len(c2.LocalConfig.Gist.Authorization) == 0 {
-				return fmt.Errorf("Cannot enable auto-sync without a valid token")
+				return fmt.Errorf("cannot enable auto-sync without a valid token")
 			}
 			c2.LocalConfig.Gist.AutoSync = autoSync
 			changed = true
@@ -69,19 +64,17 @@ func ActionSetupSync(c *cli.Context) error {
 		return err
 	}
 	if c2.LocalConfig.Gist.AutoSync {
-		diffCount, log, err := c2.Collection.GistSync(&c2.LocalConfig.Gist)
+		log, err := c2.GistSync()
+
 		if err != nil {
 			logger.Warnf("Error syncing with gist: %v", err)
 			return err
 		}
-		if diffCount > 0 {
-			logger.Infof("Synced with gist: %d changes", diffCount)
-			for _, l := range log {
-				logger.Infof("  %s", l)
-			}
-		} else {
-			logger.Infof("No changes to sync")
+
+		for _, l := range log {
+			logger.Infof("  %s", l)
 		}
+
 	}
 
 	return nil

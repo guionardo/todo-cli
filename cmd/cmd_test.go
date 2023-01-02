@@ -37,12 +37,12 @@ func CmdTest_(t *testing.T) {
 	dayAgo := time.Now().Add(-24 * time.Hour)
 	tests := []struct {
 		name string
-		item todo.ToDoItem
+		item todo.Item
 		want string
 	}{
-		{name: "completed", item: todo.ToDoItem{Title: "Title", Completed: true, UpdatedAt: dayAgo}, want: "Completed @ " + dayAgo.Format(todo.DateTimeFormat)},
-		{name: "new item", item: todo.ToDoItem{Title: "Title", UpdatedAt: dayAgo}, want: "New (1 days)"},
-		{name: "due to", item: todo.ToDoItem{Title: "Title", DueTo: dayAgo, UpdatedAt: dayAgo}, want: "Overdue -1 days"},
+		{name: "completed", item: todo.Item{Title: "Title", Completed: true, UpdatedAt: dayAgo}, want: "Completed @ " + dayAgo.Format(todo.DateTimeFormat)},
+		{name: "new item", item: todo.Item{Title: "Title", UpdatedAt: dayAgo}, want: "New (1 days)"},
+		{name: "due to", item: todo.Item{Title: "Title", DueTo: dayAgo, UpdatedAt: dayAgo}, want: "Overdue -1 days"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

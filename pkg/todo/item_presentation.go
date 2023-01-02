@@ -19,34 +19,34 @@ const (
 	ClockChar      = "⏱"
 )
 
-func (item *ToDoItem) String() string {
+func (item *Item) String() string {
 	var clr = item.ItemColor()
 
 	return clr(item.StringNoColor())
 }
 
-func (item *ToDoItem) LevelString(level int) string {
+func (item *Item) LevelString(level int) string {
 	return strings.Repeat("  ", level) + "└ " + item.String()
 }
 
-func (item *ToDoItem) ItemColor() func(string) string {
+func (item *Item) ItemColor() func(any) string {
 	if item.Completed {
 		return color.InGreen
 	}
 	if item.DueTo.IsZero() || item.DueTo.After(time.Now()) {
-		return func(s string) string {
+		return func(s any) string {
 			return color.InBold(color.InYellow(s))
 		}
 	}
 	if !item.DueTo.IsZero() && item.DueTo.Before(time.Now()) {
-		return func(s string) string {
+		return func(s any) string {
 			return color.InBold(color.InRed(s))
 		}
 	}
 	return color.InWhite
 }
 
-func (item *ToDoItem) StringNoColor() string {
+func (item *Item) StringNoColor() string {
 	completed := utils.Tern(item.Completed, CompletedChar, OpenedChar)
 	tags := utils.Tern(len(item.Tags) > 0, fmt.Sprintf("(%s) ", strings.Join(item.Tags, " ")), "")
 	lastAction := utils.Tern(item.LastAction.IsZero(), "", fmt.Sprintf(" Last action: %s ", item.LastAction.Format(DateTimeFormat)))
@@ -56,7 +56,7 @@ func (item *ToDoItem) StringNoColor() string {
 	return fmt.Sprintf("#%03d %s%s%s%s%s", item.Index, completed, tags, dueTo, lastAction, item.Title)
 }
 
-func (item *ToDoItem) NotifyText() string {
+func (item *Item) NotifyText() string {
 	if item.Completed {
 		return fmt.Sprintf("Completed @ %s", item.UpdatedAt.Format(DateTimeFormat))
 	}
@@ -79,7 +79,7 @@ func (item *ToDoItem) NotifyText() string {
 	return fmt.Sprintf("New (%d days)", int(days))
 }
 
-func getSubList(allItems map[string]*ToDoItem, item *ToDoItem, level int) []string {
+func getSubList(allItems map[string]*Item, item *Item, level int) []string {
 	delete(allItems, item.Id)
 	// Header of item
 	prefix := ""
@@ -98,9 +98,9 @@ func getSubList(allItems map[string]*ToDoItem, item *ToDoItem, level int) []stri
 	return lines
 }
 
-func (collection *ToDoCollection) GetTreeList(items []*ToDoItem) []string {
+func (collection *Collection) GetTreeList(items []*Item) []string {
 	// Get list of items with no parents
-	root := make([]*ToDoItem, 0)
+	root := make([]*Item, 0)
 	for _, item := range items {
 		if item.ParentId == "" {
 			root = append(root, item)
@@ -110,7 +110,7 @@ func (collection *ToDoCollection) GetTreeList(items []*ToDoItem) []string {
 	SortList(root)
 
 	// Get map of items to avoid duplicates
-	itemMap := make(map[string]*ToDoItem)
+	itemMap := make(map[string]*Item)
 	for _, item := range items {
 		itemMap[item.Id] = item
 	}

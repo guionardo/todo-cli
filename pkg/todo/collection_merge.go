@@ -7,7 +7,7 @@ import (
 
 type (
 	mergeData struct {
-		newCol        map[string]*ToDoItem
+		newCol        map[string]*Item
 		deleted_items map[string]void
 		log           map[string]string
 		diffCount     int
@@ -16,7 +16,7 @@ type (
 	void struct{}
 )
 
-func findItem(col []*ToDoItem, id string) *ToDoItem {
+func findItem(col []*Item, id string) *Item {
 	for _, item := range col {
 		if item.Id == id {
 			return item
@@ -25,7 +25,7 @@ func findItem(col []*ToDoItem, id string) *ToDoItem {
 	return nil
 }
 
-func mergeList(col1 []*ToDoItem, col2 []*ToDoItem, data *mergeData) {
+func mergeList(col1 []*Item, col2 []*Item, data *mergeData) {
 	for _, item := range col1 {
 		diff := false
 		col2Item := findItem(col2, item.Id)
@@ -59,15 +59,15 @@ func mergeList(col1 []*ToDoItem, col2 []*ToDoItem, data *mergeData) {
 	}
 }
 
-func MergeCollections(col1 []*ToDoItem, col2 []*ToDoItem) (newCol []*ToDoItem, deleted_items []string, log []string, diffCount int, upload bool) {
+func MergeCollections(col1 []*Item, col2 []*Item) (newCol []*Item, deleted_items []string, log []string, diffCount int, upload bool) {
 	data := &mergeData{
-		newCol:        make(map[string]*ToDoItem),
+		newCol:        make(map[string]*Item),
 		deleted_items: make(map[string]void),
 		log:           make(map[string]string),
 	}
 	mergeList(col1, col2, data)
 	mergeList(col2, col1, data)
-	newCol = make([]*ToDoItem, len(data.newCol))
+	newCol = make([]*Item, len(data.newCol))
 	i := 0
 	for _, item := range data.newCol {
 		newCol[i] = item
@@ -90,13 +90,13 @@ func MergeCollections(col1 []*ToDoItem, col2 []*ToDoItem) (newCol []*ToDoItem, d
 	return
 }
 
-func (collection *ToDoCollection) Merge(other *ToDoCollection) (log []string, diffCount int, upload bool) {
+func (collection *Collection) Merge(other *Collection) (log []string, diffCount int, upload bool) {
 	thisItems := collection.Sorted()
 	otherItems := other.Sorted()
 
 	newCol, deleted_items, log, diffCount, upload := MergeCollections(thisItems, otherItems)
 
-	collection.Items = map[string]*ToDoItem{}
+	collection.Items = map[string]*Item{}
 	for _, item := range newCol {
 		collection.Items[item.Id] = item
 	}

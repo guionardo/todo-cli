@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/guionardo/todo-cli/pkg/backup"
-	"github.com/guionardo/todo-cli/pkg/github"
 )
 
 func TestLocalConfig_Save(t *testing.T) {
@@ -15,7 +14,7 @@ func TestLocalConfig_Save(t *testing.T) {
 		dataFolder := path.Join(t.TempDir(), "data")
 		config := &LocalConfig{
 			ToDoListName: "todo",
-			Gist:         github.GetDefaultGistConfig(),
+			Gist:         GetDefaultGistConfig(),
 			Backup:       backup.GetDefaultBackupConfig(dataFolder),
 		}
 		os.MkdirAll(config.Backup.BackupFolder, 0755)

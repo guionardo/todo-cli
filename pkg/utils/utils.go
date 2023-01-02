@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/guionardo/todo-cli/pkg/git"
+	"github.com/guionardo/go-gstools/git"
 	"github.com/guionardo/todo-cli/pkg/logger"
 )
 

@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func (collection *ToDoCollection) Sorted() (items []*ToDoItem) {
-	items = make([]*ToDoItem, len(collection.Items))
+func (collection *Collection) Sorted() (items []*Item) {
+	items = make([]*Item, len(collection.Items))
 	i := 0
 	for _, item := range collection.Items {
 		items[i] = item
@@ -16,7 +16,7 @@ func (collection *ToDoCollection) Sorted() (items []*ToDoItem) {
 	return
 }
 
-func (collection *ToDoCollection) Add(item *ToDoItem) {
+func (collection *Collection) Add(item *Item) {
 	maxId := 0
 	for _, item := range collection.Items {
 		if item.Index > maxId {
@@ -31,7 +31,7 @@ func (collection *ToDoCollection) Add(item *ToDoItem) {
 	collection.LastUpdate = time.Now()
 }
 
-func (collection *ToDoCollection) Get(index int) *ToDoItem {
+func (collection *Collection) Get(index int) *Item {
 	for _, item := range collection.Items {
 		if item.Index == index {
 			return item
@@ -40,10 +40,10 @@ func (collection *ToDoCollection) Get(index int) *ToDoItem {
 	return nil
 }
 
-func (collection *ToDoCollection) Remove(index int) error {
+func (collection *Collection) Remove(index int) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("Id not found %d", index)
+		return fmt.Errorf("id not found %d", index)
 	}
 	delete(collection.Items, item.Id)
 	collection.DeletedItems = append(collection.DeletedItems, item.Id)
@@ -51,20 +51,20 @@ func (collection *ToDoCollection) Remove(index int) error {
 	return nil
 }
 
-func (collection *ToDoCollection) DoAct(index int) error {
+func (collection *Collection) DoAct(index int) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("Id not found %d", index)
+		return fmt.Errorf("id not found %d", index)
 	}
 	item.LastAction = time.Now()
 	collection.LastUpdate = time.Now()
 	return nil
 }
 
-func (collection *ToDoCollection) Complete(index int, undo bool) error {
+func (collection *Collection) Complete(index int, undo bool) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("Id not found %d", index)
+		return fmt.Errorf("id not found %d", index)
 	}
 	item.Completed = !undo
 	collection.LastUpdate = time.Now()

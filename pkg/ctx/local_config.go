@@ -4,20 +4,20 @@ import (
 	"os"
 
 	"github.com/guionardo/todo-cli/pkg/backup"
-	"github.com/guionardo/todo-cli/pkg/github"
+
 	"gopkg.in/yaml.v3"
 )
 
 type LocalConfig struct {
-	ToDoListName string              `yaml:"todo_list_name"`
-	Gist         github.GistConfig   `yaml:"gist"`
-	Backup       backup.BackupConfig `yaml:"backup"`
+	ToDoListName string        `yaml:"todo_list_name"`
+	Gist         GistConfig    `yaml:"gist"`
+	Backup       backup.Config `yaml:"backup"`
 }
 
 func GetDefaultLocalConfig(dataFolder string) *LocalConfig {
 	return &LocalConfig{
 		ToDoListName: "todo",
-		Gist:         github.GetDefaultGistConfig(),
+		Gist:         GetDefaultGistConfig(),
 		Backup:       backup.GetDefaultBackupConfig(dataFolder),
 	}
 }

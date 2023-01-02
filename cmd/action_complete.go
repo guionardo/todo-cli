@@ -38,5 +38,5 @@ func ActionComplete(c *cli.Context) error {
 	}
 	c2.CancelSaving = true
 	c2.CancelSync = true
-	return fmt.Errorf("To-do item #%d no change", c2.CurrentToDo.Index)
+	return fmt.Errorf("to-do item #%d no change", c2.CurrentToDo.Index)
 }
