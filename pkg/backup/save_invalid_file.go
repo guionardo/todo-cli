@@ -6,7 +6,7 @@ import (
 )
 
 // MoveFileToBackup Move file to back up on same folder, with file modification time as suffix
-func MoveFileToBackup(filename string) (newFileName string, err error) {
+func MoveFileToBackup(filename string) (newFileName string, err error) {	
 	stat, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		return

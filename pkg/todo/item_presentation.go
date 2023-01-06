@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"time"
@@ -48,8 +49,9 @@ func (item *Item) ItemColor() func(any) string {
 
 func (item *Item) StringNoColor() string {
 	completed := utils.Tern(item.Completed, CompletedChar, OpenedChar)
-	tags := utils.Tern(len(item.Tags) > 0, fmt.Sprintf("(%s) ", strings.Join(item.Tags, " ")), "")
-	lastAction := utils.Tern(item.LastAction.IsZero(), "", fmt.Sprintf(" Last action: %s ", item.LastAction.Format(DateTimeFormat)))
+
+	tags := utils.Tern(len(ParseTags(item.Tags)) > 0, fmt.Sprintf("(%s) ", strings.Join(item.Tags, " ")), "")
+	lastAction := utils.Tern(item.LastAction.IsZero(), "", fmt.Sprintf("Last action: %s ", item.LastAction.Format(DateTimeFormat)))
 	dueTo := utils.Tern(item.DueTo.IsZero() || item.Completed, "",
 		utils.Tern(item.DueTo.Before(time.Now()), PendingChar, ClockChar)+fmt.Sprintf(" (%s) ", item.DueTo.Format(TimeFormat)))
 
@@ -74,9 +76,8 @@ func (item *Item) NotifyText() string {
 	if lastAction.IsZero() {
 		lastAction = time.Now()
 	}
-	days := time.Now().Sub(lastAction).Hours() / 24
 
-	return fmt.Sprintf("New (%d days)", int(days))
+	return fmt.Sprintf("New (%s)", utils.DurationString(time.Now().Sub(lastAction)))
 }
 
 func getSubList(allItems map[string]*Item, item *Item, level int) []string {
@@ -122,4 +123,84 @@ func (collection *Collection) GetTreeList(items []*Item) []string {
 	}
 	return lines
 
+}
+
+func parseChildren(allItems map[string]*Item, item *Item, tvRoot *utils.TreeNode) {
+	delete(allItems, item.Id)
+	node := tvRoot.FindById(item.Id)
+	parent := tvRoot.FindById(item.ParentId)
+	if parent == nil {
+		parent = tvRoot
+	}
+	if node == nil {
+		node = parent.AddChild(item.Id, item.String())
+	} else {
+		node.Text = item.String()
+	}
+
+	for id, child := range allItems {
+		if child.ParentId == item.Id {
+			node.AddChild(id, child.String())
+			parseChildren(allItems, child, tvRoot)
+		}
+	}
+
+}
+func (collection *Collection) GetTreeView(items []*Item) []string {
+	tv := utils.NewTreeNode("root")
+	// Get list of items with no parents
+	roots := make([]*Item, 0)
+	for _, item := range items {
+		if item.ParentId == "" {
+			roots = append(roots, item)
+			tv.AddChild(item.Id, item.String())
+		}
+	}
+
+	// Sort by due date
+	SortList(roots)
+
+	// Get map of items to avoid duplicates
+	itemMap := make(map[string]*Item)
+	for _, item := range items {
+		itemMap[item.Id] = item
+	}
+
+	for _, item := range roots {
+		parseChildren(itemMap, item, tv)
+	}
+	out := bytes.NewBufferString("")
+	tv.Print(out)
+	return strings.Split(out.String(), "\n")
+
+}
+
+func getChildren(allItems map[string]*Item, item *Item) []*Item {
+	delete(allItems, item.Id)
+	children := make([]*Item, 0, 10)
+	for _, child := range allItems {
+		if child.ParentId == item.Id {
+			children = append(children, child)
+		}
+	}
+	return children
+}
+
+func getSubTree(allItems map[string]*Item, item *Item, level int) []string {
+	delete(allItems, item.Id)
+	// Header of item
+	prefix := ""
+	if level > 0 {
+		prefix = strings.Repeat("  ", level) + "+ "
+	}
+	lines := []string{fmt.Sprintf("%s%s", prefix, item.String())}
+
+	// Get list of children
+	for _, child := range allItems {
+		if child.ParentId == item.Id {
+			childLines := getSubTree(allItems, child, level+1)
+			lines = append(lines, childLines...)
+		}
+	}
+	return lines
 }

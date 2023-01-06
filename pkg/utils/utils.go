@@ -34,9 +34,10 @@ func GetShellData() (shellProfile string, thisPath string) {
 		logger.Fatalf("Error getting user home dir: %v", err)
 	}
 	shellProfile = path.Join(home, ".bashrc")
-	if _, err := os.Stat(shellProfile); os.IsNotExist(err) {
+	if err = FileExists(shellProfile); err != nil {
 		shellProfile = ""
 	}
+
 	thisPath, err = os.Executable()
 	if err != nil {
 		logger.Fatalf("Error getting executable path: %v", err)

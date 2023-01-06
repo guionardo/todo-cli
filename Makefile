@@ -4,3 +4,5 @@ test:
 build_dist:
 	bash -x ./.github/scripts/build_dist.sh
 
+install:
+	bash -x ./.github/scripts/build_dist.sh

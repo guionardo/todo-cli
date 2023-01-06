@@ -6,49 +6,40 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/guionardo/todo-cli/pkg/backup"
+	"github.com/guionardo/todo-cli/pkg/config"
 	"github.com/guionardo/todo-cli/pkg/consts"
 	"github.com/guionardo/todo-cli/pkg/todo"
+	"github.com/guionardo/todo-cli/pkg/utils"
 	"github.com/urfave/cli/v2"
 )
 
 type (
-	KeyType struct {
-		Name string
-	}
+	KeyType struct{}
 	Context struct {
 		DataFolder          string
 		LocalConfigFile     string
 		LocalCollectionFile string
-		LocalConfig         *LocalConfig
+		LocalConfig         *config.LocalConfig
 		Collection          *todo.Collection
 		Error               error
 		ExitMessage         string
+		ExitWarning         bool
 		Id                  int // Id is the first argument that is a number
 		CurrentToDo         *todo.Item
 		Args                []string // Args is the list of arguments that are not numbers
-		CancelSaving        bool
-		CancelSync          bool
+		ErrorPrefix         string
 	}
 )
 
-var Key = KeyType{Name: "todo-context"}
+var Key = KeyType{}
 
 var globalContext Context
-
-func GetDefaultDataFolder() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(fmt.Errorf("error getting user home dir: %s", err))
-	}
-	return path.Join(home, ".config", "todo-cli")
-}
 
 func ContextFromCli(c *cli.Context) *Context {
 	if len(globalContext.DataFolder) == 0 {
 		dataFolder := c.String("data-folder")
 		if dataFolder == "" {
-			dataFolder = GetDefaultDataFolder()
+			dataFolder = utils.GetDefaultDataFolder()
 		}
 		globalContext = contextFromDataFolder(dataFolder)
 		globalContext.Args = make([]string, 0)
@@ -93,16 +84,16 @@ func contextFromDataFolder(dataFolder string) Context {
 		LocalCollectionFile: path.Join(dataFolder, consts.DefaultLocalCollectionFile),
 	}
 
-	config, err := LoadLocalConfig(context.LocalConfigFile)
+	cfg, err := config.LoadLocalConfig(context.LocalConfigFile)
 	if err != nil {
-		context.LocalConfig = &LocalConfig{
+		context.LocalConfig = &config.LocalConfig{
 			ToDoListName: "todo",
-			Gist:         GetDefaultGistConfig(),
-			Backup:       backup.GetDefaultBackupConfig(dataFolder),
+			Gist:         config.GetDefaultGistConfig(),
+			Backup:       config.GetDefaultBackupConfig(dataFolder),
 		}
 		context.Error = err
 	}
-	context.LocalConfig = &config
+	context.LocalConfig = &cfg
 
 	collection, err := todo.LoadCollection(context.LocalCollectionFile)
 	if err != nil {
@@ -113,11 +104,20 @@ func contextFromDataFolder(dataFolder string) Context {
 	return context
 }
 
-func (config *Context) SetExit(err error, format string, args ...interface{}) error {
-	if err != nil {
-		config.ExitMessage = err.Error()
-	} else {
-		config.ExitMessage = fmt.Sprintf(format, args...)
-	}
+// SetExitError sets the error and the exit message.
+func (ctx *Context) SetExitError(err error, format string, args ...interface{}) error {
+	ctx.Error = err
+	ctx.ExitMessage = fmt.Sprintf(format, args...)
 	return err
+}
+
+func (ctx *Context) SetExitSuccess(format string, args ...interface{}) error {
+	ctx.ExitMessage = fmt.Sprintf(format, args...)
+	return nil
+}
+
+func (ctx *Context) SetExitWarning(format string, args ...interface{}) error {
+	ctx.ExitMessage = fmt.Sprintf(format, args...)
+	ctx.ExitWarning = true
+	return nil
 }

@@ -1,8 +1,9 @@
 package todo
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/guionardo/todo-cli/pkg/exceptions"
 )
 
 func (collection *Collection) Sorted() (items []*Item) {
@@ -43,7 +44,11 @@ func (collection *Collection) Get(index int) *Item {
 func (collection *Collection) Remove(index int) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("id not found %d", index)
+		return exceptions.TodoNotFoundError(index)
+	}
+	children := collection.GetChildren(item.Id)
+	if len(children) > 0 {
+		return exceptions.TodoItemHasChildrenError(index, len(children))
 	}
 	delete(collection.Items, item.Id)
 	collection.DeletedItems = append(collection.DeletedItems, item.Id)
@@ -54,19 +59,54 @@ func (collection *Collection) Remove(index int) error {
 func (collection *Collection) DoAct(index int) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("id not found %d", index)
+		return exceptions.TodoNotFoundError(index)
 	}
 	item.LastAction = time.Now()
 	collection.LastUpdate = time.Now()
 	return nil
 }
 
-func (collection *Collection) Complete(index int, undo bool) error {
+func (collection *Collection) Complete(index int, undo bool, recursive bool) error {
 	item := collection.Get(index)
 	if item == nil {
-		return fmt.Errorf("id not found %d", index)
+		return exceptions.TodoNotFoundError(index)
 	}
-	item.Completed = !undo
+	if item.Completed != undo {
+		return exceptions.NoChangedTodoError(index)
+	}
+	if undo {
+		if item.Completed {
+			item.Completed = false
+			item.UpdatedAt = time.Now()
+			collection.LastUpdate = time.Now()
+			return nil
+		}
+		return exceptions.NoChangedTodoError(index)
+	}
+	children := collection.GetChildren(item.Id)
+	openChildren := make([]*Item, 0, len(children))
+	if children != nil {
+		for _, child := range children {
+			if !child.Completed {
+				openChildren = append(openChildren, child)
+			}
+		}
+	}
+
+	if len(openChildren) > 0 {
+		if recursive {
+			for _, child := range openChildren {
+				if err := collection.Complete(child.Index, false, true); err != nil {
+					return err
+				}
+			}
+		} else {
+			return exceptions.TodoItemHasChildrenError(index, len(children))
+		}
+	}
+
+	item.Completed = true
+	item.UpdatedAt = time.Now()
 	collection.LastUpdate = time.Now()
 	return nil
 }

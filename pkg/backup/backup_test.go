@@ -4,6 +4,8 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"github.com/guionardo/todo-cli/pkg/config"
 )
 
 func TestBackup_(t *testing.T) {
@@ -20,7 +22,7 @@ func TestBackup_(t *testing.T) {
 		// Create backup dir
 		backupDir := path.Join(t.TempDir(), "backup")
 
-		backup, err := CreateBackup(dataFile, backupDir, Config{})
+		backup, err := CreateBackup(dataFile, backupDir, config.BackupConfig{})
 		if err != nil {
 			t.Errorf("Error creating backup: %v", err)
 			return

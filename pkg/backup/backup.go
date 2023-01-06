@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/guionardo/todo-cli/pkg/config"
+	"github.com/guionardo/todo-cli/pkg/utils"
 )
 
 type File struct {
@@ -17,19 +20,16 @@ type File struct {
 	LastBackupTime time.Time
 }
 
-func CreateBackup(source string, backupPath string, config Config) (bkp *File, err error) {
+func CreateBackup(source string, backupPath string, cfg config.BackupConfig) (bkp *File, err error) {
 	// Check if source path exists
-	if _, err := os.Stat(path.Dir(source)); os.IsNotExist(err) {
-		return nil, fmt.Errorf("source path %s does not exists", path.Dir(source))
+	if err = utils.DirectoryExists(path.Dir(source)); err != nil {
+		return nil, err
 	}
 
-	stat, err := os.Stat(backupPath)
-	// Check if backup path exists
-	if os.IsNotExist(err) {
+	if err = utils.DirectoryExists(backupPath); err != nil {
 		err = os.Mkdir(backupPath, 0755)
-	} else if !stat.IsDir() {
-		return nil, fmt.Errorf("backup path %s is not a directory", backupPath)
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -38,13 +38,13 @@ func CreateBackup(source string, backupPath string, config Config) (bkp *File, e
 		Source:     source,
 		BackupPath: backupPath,
 	}
-	bkp.PurgeOldBackups(config)
+	bkp.PurgeOldBackups(cfg)
 
 	return
 }
 
 func (b *File) DoBackup() (backupFile string, err error) {
-	if _, err := os.Stat(b.Source); os.IsNotExist(err) {
+	if err = utils.FileExists(b.Source); err != nil {
 		return "", fmt.Errorf("source file %s does not exists", b.Source)
 	}
 
@@ -87,6 +87,7 @@ func (b *File) ReadBackups() error {
 		sort.Strings(files)
 		b.LastBackups = files
 		b.LastBackup = files[len(files)-1]
+
 		if stat, err := os.Stat(b.LastBackup); err == nil {
 			b.LastBackupTime = stat.ModTime()
 		}
@@ -97,28 +98,28 @@ func (b *File) ReadBackups() error {
 	return nil
 }
 
-func (b *File) PurgeOldBackups(config Config) error {
+func (b *File) PurgeOldBackups(cfg config.BackupConfig) error {
 
 	if err := b.ReadBackups(); err != nil {
 		return err
 	}
-	if len(b.LastBackups) > config.BackupMaxCount {
-		for _, backup := range b.LastBackups[:len(b.LastBackups)-config.BackupMaxCount] {
+	if len(b.LastBackups) > cfg.BackupMaxCount {
+		for _, backup := range b.LastBackups[:len(b.LastBackups)-cfg.BackupMaxCount] {
 			os.Remove(backup)
 		}
 	}
 	return nil
 }
 
-func (b *File) AutoBackup(config Config) (done bool, err error) {
-	if !config.AutoBackup {
+func (b *File) AutoBackup(cfg config.BackupConfig) (done bool, err error) {
+	if !cfg.AutoBackup {
 		return
 	}
 
 	if err = b.ReadBackups(); err != nil {
 		return
 	}
-	if len(b.LastBackups) > 0 && time.Since(b.LastBackupTime) < time.Duration(config.AutoBackupIntervalDays)*24*time.Hour {
+	if len(b.LastBackups) > 0 && time.Since(b.LastBackupTime) < time.Duration(cfg.AutoBackupIntervalDays)*24*time.Hour {
 		return
 	}
 	_, err = b.DoBackup()

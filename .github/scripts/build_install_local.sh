@@ -13,7 +13,9 @@ echo "Build date: ${BUILD_DATE}"
 echo "Build Host: ${BUILD_HOST}"
 echo "Release:    ${RELEASE}"
 repo="github.com/guionardo/todo-cli"
-flags="-X ${repo}/utils.BuildDate=${BUILD_DATE} -X ${repo}/utils.BuildHost=${BUILD_HOST} -X ${repo}/utils.Version=${RELEASE}"
+flags="-X ${repo}/cmd.BuildDate=${BUILD_DATE} -X ${repo}/cmd.BuildHost=${BUILD_HOST} -X ${repo}/cmd.Version=${RELEASE}"
 echo "Flags:      ${flags}"
 go build -ldflags "$flags" .
 go install -ldflags "$flags" .
+go_bin="$(go env GOPATH)/bin"
+mv "${go_bin}/todo-cli" "${go_bin}/todo"

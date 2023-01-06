@@ -37,7 +37,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["setup", "shell"],
+      "args": ["setup", "shell", "--init"],
       "console": "integratedTerminal"
     },
     {
@@ -51,7 +51,7 @@
         "setup",
         "new",
         "--token",
-        "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",
+        "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",
         "--force"
       ],
       "console": "integratedTerminal"
@@ -67,7 +67,7 @@
         "setup",
         "sync",
         "--token",
-        "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",
+        "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",
         "--auto-sync",
         "false"
       ],
@@ -88,16 +88,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": [
-        "--debug",
-        "update",
-        "--title",
-        "TESTE DE TO-DO 2",
-        "--parent-id",
-        "1",
-        "--id",
-        "2"
-      ],
+      "args": ["--debug", "update", "--parent-id", "2", "--id", "3"],
       "console": "integratedTerminal"
     },
     {
@@ -115,7 +106,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["--debug", "complete", "2"],
+      "args": ["--debug", "complete", "--undo", "2"],
       "console": "integratedTerminal"
     },
     {
@@ -178,7 +169,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["--debug", "backup"],
+      "args": ["--debug", "backup", "run"],
       "console": "integratedTerminal"
     },
     {
@@ -187,7 +178,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/todo.go",
-      "args": ["--debug", "backup", "list"],
+      "args": ["backup", "list"],
       "console": "integratedTerminal"
     }
   ]
