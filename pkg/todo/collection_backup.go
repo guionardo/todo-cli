@@ -10,7 +10,7 @@ import (
 const BackupFilePrefix = "todo_backup"
 
 func validCollectionBackupFile(backupFile string) error {
-	_, err := LoadCollection(backupFile)
+	_, err := LoadFromFile(backupFile)
 	return err
 }
 
@@ -50,9 +50,9 @@ func lastBackupFilesIsSameCollection(lastBackupFile string, c Collection) bool {
 	if len(lastBackupFile) == 0 {
 		return false
 	}
-	lastBackupCollection, err := LoadCollection(lastBackupFile)
+	lastBackupCollection, err := LoadFromFile(lastBackupFile)
 	if err != nil {
 		return false
 	}
-	return c.EqualsTo(&lastBackupCollection)
+	return c.Equal(&lastBackupCollection)
 }

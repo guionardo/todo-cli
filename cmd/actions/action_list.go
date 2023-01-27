@@ -21,28 +21,23 @@ var (
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:     "id",
-				Aliases:  []string{"i"},
 				Usage:    "List a specific item",
 				Required: false,
 			},
 			&cli.BoolFlag{
 				Name:    "all",
-				Aliases: []string{"a"},
 				Usage:   "List all tasks",
 			},
 			&cli.BoolFlag{
 				Name:    "done",
-				Aliases: []string{"d"},
 				Usage:   "List all done tasks",
 			},
 			&cli.BoolFlag{
 				Name:    "pending",
-				Aliases: []string{"p"},
 				Usage:   "List all pending tasks",
 			},
 			&cli.StringSliceFlag{
 				Name:    "tags",
-				Aliases: []string{"t"},
 				Usage:   "List all tasks with the specified tags",
 			},
 			&cli.BoolFlag{

@@ -9,8 +9,7 @@ import (
 var (
 	ActCommand = &cli.Command{
 		Name:    "act",
-		Usage:   "Set current timestamp as action for item",
-		Aliases: []string{"a"},
+		Usage:   "Set current timestamp as action for item",		
 		Before: ctx.ChainedContext(ctx.LocalConfigRequired,
 			ctx.AssertAutoSychronization,
 			ctx.RequiredTodoId),

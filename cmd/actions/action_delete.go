@@ -11,7 +11,6 @@ var (
 	DeleteCommand = &cli.Command{
 		Name:     "delete",
 		Usage:    "Delete a todo item",
-		Aliases:  []string{"d"},
 		Action:   ActionDelete,
 		Category: "Tasks",
 		Flags: []cli.Flag{

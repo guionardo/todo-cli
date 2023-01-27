@@ -13,14 +13,12 @@ var (
 	UpdateCommand = &cli.Command{
 		Name:     "update",
 		Usage:    "Update a todo item",
-		Aliases:  []string{"u"},
 		Action:   ActionUpdate,
 		Category: "Tasks",
 		Before:   ctx.ChainedContext(ctx.LocalConfigRequired, ctx.RequiredTodoId),
 		Flags: append([]cli.Flag{
 			&cli.IntFlag{
 				Name:     "id",
-				Aliases:  []string{"i"},
 				Usage:    "ID of the task",
 				Required: true,
 			}},

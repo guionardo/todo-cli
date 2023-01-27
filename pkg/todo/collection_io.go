@@ -7,16 +7,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func LoadCollection(filename string) (collection Collection, err error) {
+func LoadFromFile(filename string) (collection Collection, err error) {
 	var content []byte
 	if content, err = os.ReadFile(filename); err == nil {
-		return LoadCollectionFromData(content)
+		return LoadFromData(content)
 	}
 
 	return
 }
 
-func LoadCollectionFromData(data []byte) (collection Collection, err error) {
+func LoadFromData(data []byte) (collection Collection, err error) {
 	err = yaml.Unmarshal(data, &collection)
 	if err == nil {
 		collection.UpdateLevels()

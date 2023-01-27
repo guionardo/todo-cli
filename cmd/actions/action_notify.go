@@ -24,7 +24,6 @@ func init() {
 	}
 	NotifyCommand = &cli.Command{
 		Name:    "notify",
-		Aliases: []string{"n"},
 		Usage:   "Notify about pending tasks",
 		Action:  ActionNotify,
 		Flags:   flags,

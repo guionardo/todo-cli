@@ -84,7 +84,7 @@ func contextFromDataFolder(dataFolder string) Context {
 		LocalCollectionFile: path.Join(dataFolder, consts.DefaultLocalCollectionFile),
 	}
 
-	cfg, err := config.LoadLocalConfig(context.LocalConfigFile)
+	cfg, err := config.LoadFromFile(context.LocalConfigFile)
 	if err != nil {
 		context.LocalConfig = &config.LocalConfig{
 			ToDoListName: "todo",
@@ -95,7 +95,7 @@ func contextFromDataFolder(dataFolder string) Context {
 	}
 	context.LocalConfig = &cfg
 
-	collection, err := todo.LoadCollection(context.LocalCollectionFile)
+	collection, err := todo.LoadFromFile(context.LocalCollectionFile)
 	if err != nil {
 		context.Error = err
 		return context

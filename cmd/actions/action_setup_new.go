@@ -20,18 +20,15 @@ func GetCommandSetupNew() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "name",
-				Aliases: []string{"n"},
 				Usage:   "Name of the todo list",
 				Value:   fmt.Sprintf("%s's TODO", utils.GetUser()),
 			},
 			&cli.BoolFlag{
 				Name:    "force",
-				Aliases: []string{"f"},
 				Usage:   "Force creation of new config file",
 			},
 			&cli.StringFlag{
 				Name:     "token",
-				Aliases:  []string{"t"},
 				Usage:    "Set Github token. Create a new github token at https://github.com/settings/tokens/new with gist permission",
 				Required: false,
 			},
@@ -49,11 +46,11 @@ func checkFileExists(localFile string, backupFolder string, force bool, fileTitl
 	}
 	logger.Warnf("%s %s already exists. Overwriting", fileTitle, localFile)
 
-	// cfg,err:=ctx.LoadLocalConfig(localFile)
-	// if err != nil {
-	// 	logger.Warnf("Error loading %s %s: %v", fileTitle, localFile, err)
-	// 	return err
-	// }
+	_, err := config.LoadFromFile(localFile)
+	if err != nil {
+		logger.Warnf("Error loading %s %s: %v", fileTitle, localFile, err)
+		return err
+	}
 
 	bkp, err := backup.CreateBackup(localFile, backupFolder, backupCfg)
 	if err != nil {

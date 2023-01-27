@@ -23,30 +23,25 @@ func GetCommandSetupBackup() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "path",
-				Aliases:     []string{"p"},
 				Destination: &currentConfig.Backup.BackupFolder,
 				Usage:       "Path to backup directory",
 			},
 			&cli.IntFlag{
 				Name:    "needed_warning_days",
-				Aliases: []string{"w"},
 				Usage:   "Number of days before the backup is considered old",
 				Value:   7,
 			},
 			&cli.IntFlag{
 				Name:    "max_count",
-				Aliases: []string{"m"},
 				Value:   10,
 			},
 			&cli.BoolFlag{
 				Name:    "auto_backup",
-				Aliases: []string{"a"},
 				Value:   true,
 				Usage:   "Set to false to disable automatic backup",
 			},
 			&cli.IntFlag{
 				Name:    "auto_backup_interval_days",
-				Aliases: []string{"i"},
 				Value:   1,
 				Usage:   "Number of days between automatic backups",
 			},

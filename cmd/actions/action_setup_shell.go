@@ -21,7 +21,6 @@ func GetCommandSetupShell() *cli.Command {
 			},
 			&cli.BoolFlag{
 				Name:    "remove",
-				Aliases: []string{"r"},
 				Usage:   "Remove shell integration",
 			},
 		},

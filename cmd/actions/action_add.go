@@ -13,7 +13,6 @@ var (
 	AddCommand = &cli.Command{
 		Name:    "add",
 		Usage:   "Add a new todo item",
-		Aliases: []string{"a"},
 		Before: ctx.ChainedContext(
 			ctx.LocalConfigRequired,
 			ctx.AssertAutoSychronization),

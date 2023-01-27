@@ -180,6 +180,15 @@
       "program": "${workspaceFolder}/todo.go",
       "args": ["backup", "list"],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "add --help",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/todo.go",
+      "args": ["add", "--help"],
+      "console": "integratedTerminal"
     }
   ]
 }

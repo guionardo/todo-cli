@@ -52,3 +52,12 @@ func (c *GistConfig) SetToken(token string) error {
 
 	return nil
 }
+
+func (c *GistConfig) Equal(other *GistConfig) bool {
+	return c.Authorization == other.Authorization &&
+		c.GistId == other.GistId &&
+		c.AutoSync == other.AutoSync &&
+		c.GistDescription == other.GistDescription &&
+		c.LastSync.Equal(other.LastSync) &&
+		c.AutoSyncInterval == other.AutoSyncInterval
+}

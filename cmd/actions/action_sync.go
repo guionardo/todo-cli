@@ -11,7 +11,6 @@ var (
 	SyncCommand = &cli.Command{
 		Name:     "sync",
 		Usage:    "Synchronize local collection with GIST",
-		Aliases:  []string{"s"},
 		Action:   ActionSync,
 		Category: "Setup",
 		Before:   ctx.ChainedContext(ctx.LocalConfigRequired),
@@ -33,5 +32,4 @@ func ActionSync(c *cli.Context) error {
 		logger.Infof(log)
 	}
 	return err
-
 }

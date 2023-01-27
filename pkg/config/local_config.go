@@ -3,8 +3,6 @@ package config
 import (
 	"os"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 type LocalConfig struct {
@@ -31,19 +29,36 @@ func GetDefaultLocalConfig(dataFolder string) *LocalConfig {
 	}
 }
 
-func LoadLocalConfig(filename string) (cfg LocalConfig, err error) {
+func LoadFromFile(filename string) (cfg LocalConfig, err error) {
 	var content []byte
 	if content, err = os.ReadFile(filename); err == nil {
-		err = yaml.Unmarshal(content, &cfg)
+		err = cfg.Parse(content)
 	}
 
 	return
 }
 
-func (c *LocalConfig) Save(filename string) error {
-	if content, err := yaml.Marshal(c); err == nil {
-		return os.WriteFile(filename, content, 0644)
-	}
-
-	return nil
+func validConfigFile(backupFile string) error {
+	_, err := LoadFromFile(backupFile)
+	return err
 }
+func lastBackupConfigFileIsSameConfig(lastBackupFile string, c LocalConfig) bool {
+	if len(lastBackupFile) == 0 {
+		return false
+	}
+	cfg, err := LoadFromFile(lastBackupFile)
+
+	if err != nil {
+		return false
+	}
+	return c.Equal(&cfg)
+}
+
+// func (c *LocalConfig) DoBackup(fileName string, cfg *BackupConfig) error {
+// 	prefix := strings.TrimSuffix(path.Base(fileName), path.Ext(fileName))
+// 	backupFiles, err := utils.NewBackupFiles(cfg.BackupFolder, prefix, cfg.BackupMaxCount, validConfigFile)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// }

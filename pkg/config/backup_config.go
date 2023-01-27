@@ -27,3 +27,11 @@ func GetDefaultBackupConfig(dataFolder string) BackupConfig {
 		BackupFolder:            path.Join(dataFolder, "backup"),
 	}
 }
+
+func (bc *BackupConfig) Equal(other *BackupConfig) bool {
+	return bc.AutoBackup == other.AutoBackup &&
+		bc.AutoBackupIntervalDays == other.AutoBackupIntervalDays &&
+		bc.BackupFolder == other.BackupFolder &&
+		bc.BackupMaxCount == other.BackupMaxCount &&
+		bc.BackupNeededWarningDays == other.BackupNeededWarningDays
+}

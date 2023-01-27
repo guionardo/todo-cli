@@ -31,7 +31,7 @@ func (config *Context) GistSync() (log []string, err error) {
 		return
 	}
 
-	localCollection, err := todo.LoadCollection(config.LocalCollectionFile)
+	localCollection, err := todo.LoadFromFile(config.LocalCollectionFile)
 
 	if err != nil {
 		// error on reading or parsing collection file
@@ -47,7 +47,7 @@ func (config *Context) GistSync() (log []string, err error) {
 		if err == nil {
 			if collectionFile, ok := remoteGist.Files[github.GistFilename(path.Base(config.LocalCollectionFile))]; ok {
 				var collectionData string = *collectionFile.Content
-				remoteCollection, err = todo.LoadCollectionFromData([]byte(collectionData))
+				remoteCollection, err = todo.LoadFromData([]byte(collectionData))
 			}
 		}
 		if err != nil {
@@ -111,7 +111,7 @@ func (config *Context) GistSync() (log []string, err error) {
 		log = append(log, fmt.Sprintf("Uploading files to GIST #%s - %s", *remoteGist.ID, *remoteGist.Description))
 	case gist.Download:
 		log = append(log, fmt.Sprintf("Downloading files from GIST #%s - %s", *remoteGist.ID, *remoteGist.Description))
-		localCollection, err = todo.LoadCollection(tmpCol)
+		localCollection, err = todo.LoadFromFile(tmpCol)
 		if err != nil {
 			log = append(log, fmt.Sprintf("Error on reading or parsing collection file. %v", err))
 		} else {

@@ -16,13 +16,11 @@ func GetCommandSetupSync() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "auto-sync",
-				Aliases: []string{"a"},
 				Usage:   "Enable auto sync on every change",
 				Value:   true,
 			},
 			&cli.StringFlag{
 				Name:    "token",
-				Aliases: []string{"t"},
 				Usage:   "Set Github token. Create a new github token at https://github.com/settings/tokens/new with gist permission",
 			},
 		},

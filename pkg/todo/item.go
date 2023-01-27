@@ -24,7 +24,7 @@ func NewItemId() string {
 	return uuid.New().String()
 }
 
-func (i *Item) EqualsTo(other *Item) bool {
+func (i *Item) Equal(other *Item) bool {
 	return (i != nil &&
 		other != nil &&
 		i.Id == other.Id &&

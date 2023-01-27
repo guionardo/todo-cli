@@ -13,7 +13,6 @@ func init() {
 	SetupCommand = &cli.Command{
 		Name:     "setup",
 		Usage:    "Setup todo app",
-		Aliases:  []string{"s"},
 		Category: "Setup",
 		Subcommands: []*cli.Command{
 			GetCommandSetupShow(),

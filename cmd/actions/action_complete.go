@@ -11,7 +11,6 @@ var (
 	CompleteCommand = &cli.Command{
 		Name:      "complete",
 		Usage:     "Complete a todo item",
-		Aliases:   []string{"c"},
 		Action:    ActionComplete,
 		Category:  "Tasks",
 		ArgsUsage: "[todo-id]",

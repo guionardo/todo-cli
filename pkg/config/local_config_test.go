@@ -23,7 +23,7 @@ func TestLocalConfig_Save(t *testing.T) {
 			return
 		}
 
-		config2, err := LoadLocalConfig(filename)
+		config2, err := LoadFromFile(filename)
 		if err != nil {
 			t.Errorf("LoadLocalConfig() error = %v", err)
 			return
